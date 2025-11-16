@@ -66,44 +66,14 @@
                     <div class="sensor-value" id="humidity3">--</div>
                     <div class="sensor-status" id="status3">Conectando...</div>
                 </div>
+                <div class="sensor-card humidity-card">
+                    <div class="sensor-label">Sensor 4 - Área de Plantines</div>
+                    <div class="sensor-value" id="humidity4">--</div>
+                    <div class="sensor-status" id="status4">Conectando...</div>
+                </div>
             </div>
             <br />
-            <br />
-            <!-- Sección próximos riegos -->
-            <div class="sensor-container" style="background: #e6fff0; border-left: 4px solid #26de81;">
-                <h2 style="color:#2d8659; margin-bottom: 20px; display:flex; align-items:center; gap:10px;">
-                    💧 Próximos Riegos Programados
-                </h2>
-
-                <!-- ITEM 1 -->
-                <div class="schedule-item-humidity">
-                    <div>
-                        <strong>Orquídea Phalaenopsis (Zona A)</strong><br>
-                        <small style="color:#666;">Próximo riego: 2024-11-16 08:00</small>
-                    </div>
-                    <span class="schedule-badge">Mañana</span>
-                </div>
-
-                <!-- ITEM 2 -->
-                <div class="schedule-item-humidity">
-                    <div>
-                        <strong>Orquídea Cattleya (Zona B)</strong><br>
-                        <small style="color:#666;">Próximo riego: 2024-11-15 18:00</small>
-                    </div>
-                    <span class="schedule-badge">Hoy</span>
-                </div>
-
-                <!-- ITEM 3 -->
-                <div class="schedule-item-humidity">
-                    <div>
-                        <strong>Orquídea Dendrobium (Zona C)</strong><br>
-                        <small style="color:#666;">Próximo riego: 2024-11-17 09:00</small>
-                    </div>
-                    <span class="schedule-badge">En 2 días</span>
-                </div>
-
-            </div>
-        </div>
+            <br />           
 
         <!-- HISTORIAL -->
         <div class="sensor-container">
@@ -113,7 +83,9 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: #f8f9fa;">
+                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Fecha</th>
                             <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Hora</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Zona</th>
                             <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Sensor</th>
                             <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Humedad</th>
                             <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Estado</th>
@@ -129,15 +101,9 @@
         const OPTIMAL_MIN = 40;
         const OPTIMAL_MAX = 70;
 
-        const wateringSchedule = [
-            { plant: 'Orquídea Phalaenopsis (Zona A)', nextWatering: '2024-11-16 08:00', status: 'Mañana' },
-            { plant: 'Orquídea Cattleya (Zona B)', nextWatering: '2024-11-15 18:00', status: 'Hoy' },
-            { plant: 'Orquídea Dendrobium (Zona C)', nextWatering: '2024-11-17 09:00', status: 'En 2 días' }
-        ];
-
-
         function updateHumiditySensors() {
-            for (let i = 1; i <= 3; i++) {
+            for (let i = 1; i <= 4; i++) {
+                let zone;
                 const humidity = (Math.random() * 40 + 40).toFixed(1);
                 document.getElementById(`humidity${i}`).textContent = humidity + '%';
 
@@ -147,18 +113,42 @@
                 else status = '⚠️ Muy Húmedo';
 
                 document.getElementById(`status${i}`).textContent = status;
+                switch (i){
+                    case 1:
+                        zone = "Zona A";
+                        break;
 
-                addToHistory(i, humidity, status);
+                    case 2:
+                        zone = "Zona B";
+                        break;
+
+                    case 3:
+                        zone = "Zona C";
+                        break;
+
+                    case 4:
+                        zone = "Área de Plantines";
+                        break;
+
+                    default:
+                        zone = "Zona desconocida";
+                        break;
+                }
+
+                addToHistory(zone,i, humidity, status);
             }
         }
 
-        function addToHistory(sensorId, humidity, status) {
+        function addToHistory(zone ,sensorId, humidity, status) {
             const table = document.getElementById('historyTable');
+            const date = new Date().getDate().toString();
             const time = new Date().toLocaleTimeString();
 
             const row = document.createElement('tr');
             row.innerHTML = `
+                <td style="padding: 12px;">${date}</td>
                 <td style="padding: 12px;">${time}</td>
+                <td style="padding: 12px;">${zone}</td>
                 <td style="padding: 12px;">Sensor ${sensorId}</td>
                 <td style="padding: 12px;"><strong>${humidity}%</strong></td>
                 <td style="padding: 12px;">${status}</td>
