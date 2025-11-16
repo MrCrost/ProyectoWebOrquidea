@@ -45,19 +45,26 @@
 
         <!-- Menu Cards -->
         <div class="menu-grid">
-            <div class="menu-card humidity" onclick="location.href='@Url.Action("Humidity", "Home")'">
+
+            <div class="menu-card humiditysoil" onclick="location.href='@Url.Action("HumiditySoil", "HumedadSuelo")'">
+                <div class="menu-icon">💧</div>
+                <h2>Humedad Suelo</h2>
+                <p>Monitoreo de humedad en tiempo real</p>
+            </div>
+
+            <div class="menu-card humidity" onclick="location.href='@Url.Action("Humidity", "HumedadAmbiente")'">
                 <div class="menu-icon">💧</div>
                 <h2>Humedad Ambiental</h2>
                 <p>Monitoreo de humedad en tiempo real</p>
             </div>
 
-            <div class="menu-card temperature" onclick="location.href='@Url.Action("Temperature", "Home")'">
+            <div class="menu-card temperature" onclick="location.href='@Url.Action("Temperature", "TemperaturaAmbiente")'">
                 <div class="menu-icon">🌡️</div>
                 <h2>Temperatura Ambiental</h2>
                 <p>Control de temperatura del invernadero</p>
             </div>
 
-            <div class="menu-card calendar" onclick="location.href='@Url.Action("Calendar", "Home")'">
+            <div class="menu-card calendar" onclick="location.href='@Url.Action("Calendar", "CalendarioRiego")'">
                 <div class="menu-icon">📅</div>
                 <h2>Calendario de Riego</h2>
                 <p>Programa y gestiona el riego</p>
