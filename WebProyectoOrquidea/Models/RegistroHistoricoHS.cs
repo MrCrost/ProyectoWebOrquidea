@@ -2,6 +2,7 @@
 {
     public class RegistroHistoricoHS
     {
+        public int IdRegistroHistoricoHS { get; set; }
         public DateOnly Fecha { get; set; }
         public TimeOnly Hora { get; set; }
         public string NombreOrquidea { get; set; }

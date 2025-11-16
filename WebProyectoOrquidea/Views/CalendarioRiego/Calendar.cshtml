@@ -65,8 +65,17 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="wateringDate">Fecha de Riego</label>
-                        <input type="date" id="wateringDate" class="form-control" required>
+                        <label for="wateringDay">Día de Riego</label>
+                        <select id="wateringDay" class="form-control" required>
+                            <option value="0">Seleccione el día</option>
+                            <option value="1">Lunes</option>
+                            <option value="2">Martes</option>
+                            <option value="3">Miercoles</option>
+                            <option value="4">Jueves</option>
+                            <option value="5">Viernes</option>
+                            <option value="6">Sabado</option>
+                            <option value="7">Domingo</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -77,11 +86,11 @@
                     <div class="form-group">
                         <label for="frequency">Frecuencia</label>
                         <select id="frequency" class="form-control" required>
-                            <option value="">Seleccione frecuencia</option>
-                            <option value="diario">Diario</option>
-                            <option value="cada2dias">Cada 2 días</option>
-                            <option value="cada3dias">Cada 3 días</option>
-                            <option value="semanal">Semanal</option>
+                            <option value="">Seleccione frecuencia diaria</option>
+                            <option value="1">1 vez al dia</option>
+                            <option value="2">2 veces al dia</option>
+                            <option value="3">3 veces al dia</option>
+                            <option value="4">4 veces al dia</option>
                         </select>
                     </div>
 
@@ -136,9 +145,9 @@
                 id: 1,
                 plantName: 'Phalaenopsis Blanca',
                 zone: 'A',
-                date: '2024-11-15',
+                day: 1,
                 time: '08:00',
-                frequency: 'cada2dias',
+                frequency: 2,
                 notificationMethod: 'all',
                 active: true
             },
@@ -146,9 +155,9 @@
                 id: 2,
                 plantName: 'Cattleya Rosada',
                 zone: 'B',
-                date: '2024-11-15',
+                day: 3,
                 time: '18:00',
-                frequency: 'cada3dias',
+                frequency: 3,
                 notificationMethod: 'all',
                 active: true
             },
@@ -156,9 +165,9 @@
                 id: 3,
                 plantName: 'Dendrobium Amarilla',
                 zone: 'C',
-                date: '2024-11-16',
+                day: 7,
                 time: '09:00',
-                frequency: 'diario',
+                frequency: 1,
                 notificationMethod: 'sms',
                 active: true
             }
@@ -171,9 +180,9 @@
                 id: wateringSchedules.length + 1,
                 plantName: document.getElementById('plantName').value,
                 zone: document.getElementById('plantZone').value,
-                date: document.getElementById('wateringDate').value,
+                day: Number(document.getElementById('wateringDay').value),
                 time: document.getElementById('wateringTime').value,
-                frequency: document.getElementById('frequency').value,
+                frequency: Number(document.getElementById('frequency').value),
                 notificationMethod: document.getElementById('notificationMethod').value,
                 active: true
             };
@@ -218,12 +227,25 @@
 
         function getFrequencyText(freq) {
             const texts = {
-                'diario': 'Diario',
-                'cada2dias': 'Cada 2 días',
-                'cada3dias': 'Cada 3 días',
-                'semanal': 'Semanal'
+                1: '1 vez al dia',
+                2: '2 veces al dia',
+                3: '3 veces al dia',
+                4: '4 veces al dia'
             };
             return texts[freq] || freq;
+        }
+
+        function getDayText(day) {
+            const texts = {
+                1: 'Lunes',
+                2: 'Martes',
+                3: 'Miercoles',
+                4: 'Jueves',
+                5: 'Viernes',
+                6: 'Sabado',
+                7: 'Domingo'
+            };
+            return texts[day] || day;
         }
 
         function renderScheduleList() {
@@ -244,7 +266,7 @@
                             </span>
                         </h3>
                         <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:14px;color:#666;">
-                            <span>📅 ${schedule.date}</span>
+                            <span>📅 ${getDayText(schedule.day)}</span>
                             <span>🕐 ${schedule.time}</span>
                             <span>🔄 ${getFrequencyText(schedule.frequency)}</span>
                             <span>🔔 ${getNotificationIcon(schedule.notificationMethod)}</span>
@@ -264,8 +286,9 @@
         }
 
         function renderTodayWatering() {
-            const today = new Date().toISOString().split('T')[0];
-            const todaySchedules = wateringSchedules.filter(s => s.date === today && s.active);
+            let today = new Date().getDay();
+            if (today === 0) today = 7;
+            const todaySchedules = wateringSchedules.filter(s => s.day === today && s.active);
             const container = document.getElementById('todayWatering');
 
             if (todaySchedules.length === 0) {
@@ -311,9 +334,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('wateringDate').min = today;
-            document.getElementById('wateringDate').value = today;
+            const today = new Date().getDay();
+            document.getElementById('wateringDay').value = today;
 
             renderScheduleList();
             renderTodayWatering();

@@ -2,6 +2,7 @@
 {
     public class RegistroHistoricoHA
     {
+        public int IdRegistroHistoricoHA { get; set; }
         public DateOnly Fecha { get; set; }
         public TimeOnly Hora { get; set; }
         public string Zona { get; set; }

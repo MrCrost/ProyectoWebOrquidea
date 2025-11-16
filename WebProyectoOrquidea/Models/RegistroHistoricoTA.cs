@@ -5,6 +5,7 @@
 {
     public class RegistroHistoricoTA
     {
+        public int IdRegistroHistoricoTA { get; set; }
         public DateOnly Fecha { get; set; }
         public TimeOnly Hora { get; set; }
         public string Sensor { get; set; }

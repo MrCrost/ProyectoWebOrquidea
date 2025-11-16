@@ -30,7 +30,7 @@ namespace WebProyectoOrquidea.Controllers
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Humidity));
             }
             catch
             {
@@ -51,7 +51,7 @@ namespace WebProyectoOrquidea.Controllers
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Humidity));
             }
             catch
             {
@@ -72,12 +72,29 @@ namespace WebProyectoOrquidea.Controllers
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Humidity));
             }
             catch
             {
                 return View();
             }
+        }
+
+
+        // GET: Obtener historial de datos
+        [HttpGet]
+        public IActionResult GetHistoricalData(DateTime startDate, DateTime endDate, string sensorType)
+        {
+            // AQUÍ SE CONECTARÍA CON LA BASE DE DATOS
+            // Consulta de ejemplo:
+            /*
+            var query = @"SELECT * FROM HistorialSensores 
+                         WHERE FechaRegistro BETWEEN @StartDate AND @EndDate 
+                         AND TipoSensor = @SensorType
+                         ORDER BY FechaRegistro DESC";
+            */
+
+            return Json(new { success = true, data = new List<object>() });
         }
     }
 }
