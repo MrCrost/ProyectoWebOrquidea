@@ -1,0 +1,188 @@
+﻿@{
+    ViewData["Title"] = "Dashboard - OrchidCare";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css">
+</head>
+<body class="dashboard-background">
+
+    <!--  LOADER   -->
+    <div id="loader">
+        <div class="loader-icon" style="font-size:70px;">
+            🌸
+        </div>
+    </div>
+    <!--  FIN LOADER -->
+
+    <div class="topbar">
+        <div>
+            <h1 style="margin: 0;">🌸 OrchidCare</h1>
+            <p style="color: #666; margin: 0; font-size: 14px;">Sistema de Monitoreo Inteligente</p>
+        </div>
+
+        <div class="user-info">
+            <span style="color: #444;">Bienvenido, <strong>Admin</strong></span>
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="dashboard">
+
+        <!-- Notifications Panel -->
+        <div class="notifications-panel">
+            <h2 style="margin-bottom: 20px; color: #764ba2;">📢 Centro de Notificaciones</h2>
+            <div id="notificationsContainer">
+                <!-- Notificaciones dinámicas -->
+            </div>
+        </div>
+
+        <!-- Menu Cards -->
+        <div class="menu-grid">
+            <div class="menu-card humidity" onclick="location.href='@Url.Action("Humidity", "Home")'">
+                <div class="menu-icon">💧</div>
+                <h2>Humedad del Suelo</h2>
+                <p>Monitoreo de humedad en tiempo real</p>
+            </div>
+
+            <div class="menu-card temperature" onclick="location.href='@Url.Action("Temperature", "Home")'">
+                <div class="menu-icon">🌡️</div>
+                <h2>Temperatura Ambiental</h2>
+                <p>Control de temperatura del invernadero</p>
+            </div>
+
+            <div class="menu-card calendar" onclick="location.href='@Url.Action("Calendar", "Home")'">
+                <div class="menu-icon">📅</div>
+                <h2>Calendario de Riego</h2>
+                <p>Programa y gestiona el riego</p>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="sensor-container">
+            <h2 style="color: #764ba2; margin-bottom: 20px;">📊 Resumen Rápido - Datos en Tiempo Real</h2>
+
+            <div class="sensor-grid">
+                <div class="sensor-card humidity-card">
+                    <div class="sensor-label">Humedad Actual</div>
+                    <div class="sensor-value" id="quickHumidity">--</div>
+                    <div class="sensor-status" id="quickHumidityStatus">Inicializando...</div>
+                </div>
+
+                <div class="sensor-card temperature-card">
+                    <div class="sensor-label">Temperatura Actual</div>
+                    <div class="sensor-value" id="quickTemperature">--</div>
+                    <div class="sensor-status" id="quickTempStatus">Inicializando...</div>
+                </div>
+            </div>
+
+            <div class="db-placeholder">
+                <h3>🗄️ Conexión con Base de Datos</h3>
+                <p>Aquí se conectará la base de datos para almacenar el historial de mediciones</p>
+                <p style="font-size: 12px; margin-top: 10px; color: #856404;">
+                    <strong>Información técnica:</strong> Se utilizará SQL Server/MySQL para almacenar:
+                    <br>- Registros históricos de humedad y temperatura
+                    <br>- Configuraciones del calendario de riego
+                    <br>- Historial de notificaciones enviadas
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JS -->
+    <script>
+        // Simular datos de sensores en tiempo real
+        function updateSensorData() {
+            const humidity = (Math.random() * 20 + 70).toFixed(1);
+            document.getElementById('quickHumidity').textContent = humidity + '%';
+            document.getElementById('quickHumidityStatus').textContent =
+                humidity >= 75 && humidity <= 85 ? '✅ Óptimo' :
+                humidity < 75 ? '⚠️ Bajo' : '⚠️ Alto';
+
+            const temp = (Math.random() * 8 + 17).toFixed(1);
+            document.getElementById('quickTemperature').textContent = temp + '°C';
+            document.getElementById('quickTempStatus').textContent =
+                temp >= 18 && temp <= 24 ? '✅ Óptimo' :
+                temp < 18 ? '⚠️ Frío' : '⚠️ Caliente';
+        }
+
+        setInterval(updateSensorData, 3000);
+        updateSensorData();
+
+        // Sistema de notificaciones
+        const notifications = [
+            {
+                message: '💧 Es momento de regar la Orquídea #1',
+                type: 'warning',
+                channels: ['📱 SMS', '📧 Email', '🌐 Web']
+            },
+            {
+                message: '✅ Condiciones ambientales óptimas en Invernadero A',
+                type: 'success',
+                channels: ['🌐 Web']
+            },
+            {
+                message: '⚠️ Humedad baja detectada en Zona 3',
+                type: 'warning',
+                channels: ['📱 SMS', '📧 Email', '🌐 Web']
+            }
+        ];
+
+        function addNotification(notification) {
+            const container = document.getElementById('notificationsContainer');
+            const notifDiv = document.createElement('div');
+
+            notifDiv.className = `notification-item ${notification.type}`;
+            notifDiv.innerHTML = `
+                <div>
+                    <strong>${notification.message}</strong>
+                    <div class="notification-channels">
+                        ${notification.channels.map(ch => `<span>${ch}</span>`).join('')}
+                    </div>
+                </div>
+                <small style="color: #666;">${new Date().toLocaleTimeString()}</small>
+            `;
+
+            container.insertBefore(notifDiv, container.firstChild);
+
+            if (container.children.length > 5) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        let notifIndex = 0;
+        setInterval(() => {
+            addNotification(notifications[notifIndex % notifications.length]);
+            notifIndex++;
+        }, 10000);
+
+        addNotification(notifications[0]);
+
+        function logout() {
+            if (confirm('¿Desea cerrar sesión?')) {
+                window.location.href = '@Url.Action("Login", "Home")';
+            }
+        }
+
+        // ⬇️⬇️⬇️ SCRIPT DEL LOADER ⬇️⬇️⬇️
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("loader");
+            loader.classList.add("fade-out");
+
+            setTimeout(() => {
+                loader.style.display = "none";
+            }, 500);
+        });
+        // ⬆️⬆️⬆️ FIN SCRIPT LOADER ⬆️⬆️⬆️
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,234 @@
+﻿@{
+    ViewData["Title"] = "Monitor de Temperatura - OrchidCare";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css">
+</head>
+
+<body class="temperature-background">
+
+    <!--  LOADER - Opción 3: Flor girando  -->
+    <div id="loader">
+        <div class="loader-icon">
+            🌸
+        </div>
+    </div>
+    <!--  FIN LOADER -->
+    <!-- TOPBAR TEMPERATURA -->
+    <div class="topbar-temperature">
+        <div class="topbar-left">
+            <span class="top-icon">🌡️</span>
+            <h2 class="top-title">Monitor de Temperatura Ambiental</h2>
+        </div>
+
+        <button class="topbar-btn"
+                onclick="location.href='@Url.Action("Dashboard", "Home")'">
+            ← Volver al Menú Principal
+        </button>
+    </div>
+
+
+    <!-- CONTENIDO -->
+    <div class="dashboard">
+
+        <!-- Información del rango óptimo -->
+        <div class="sensor-container">
+            <h3 style="color:#764ba2; margin-bottom:10px;">ℹ️ Rango Óptimo de Temperatura</h3>
+            <div style="display:flex; gap:30px; flex-wrap:wrap;">
+                <div><strong>🌙 Noche:</strong> 18°C - 20°C</div>
+                <div><strong>☀️ Día:</strong> 22°C - 24°C</div>
+                <div><strong>💧 Humedad Relativa:</strong> ~80%</div>
+            </div>
+        </div>
+
+        <!-- Sensores -->
+        <div class="sensor-container">
+            <div class="sensor-header">
+                <h2 style="color:#764ba2;">📡 Sensores de Temperatura - Tiempo Real</h2>
+                <button onclick="location.reload()" class="btn-primary">🔄 Actualizar</button>
+            </div>
+
+            <div class="sensor-grid">
+                <div class="sensor-card temperature-card">
+                    <div class="sensor-label">Invernadero Principal</div>
+                    <div class="sensor-value" id="temp1">--</div>
+                    <div class="sensor-status" id="tempStatus1">Conectando...</div>
+                    <small style="opacity:.8;margin-top:10px;display:block;">Zona A - B - C</small>
+                </div>
+
+                <div class="sensor-card temperature-card">
+                    <div class="sensor-label">Zona de Propagación</div>
+                    <div class="sensor-value" id="temp2">--</div>
+                    <div class="sensor-status" id="tempStatus2">Conectando...</div>
+                    <small style="opacity:.8;margin-top:10px;display:block;">Área de plantines</small>
+                </div>
+
+                <div class="sensor-card temperature-card">
+                    <div class="sensor-label">Exterior (Referencia)</div>
+                    <div class="sensor-value" id="temp3">--</div>
+                    <div class="sensor-status" id="tempStatus3">Conectando...</div>
+                    <small style="opacity:.8;margin-top:10px;display:block;">Temperatura ambiente</small>
+                </div>
+            </div>
+
+            <div id="temperatureAlerts" style="margin-top:20px;"></div>
+
+            <div class="db-placeholder" style="margin-top:20px;">
+                <h3>🗄️ Almacenamiento de Datos de Temperatura</h3>
+                <p>Los datos de temperatura se guardarán en la base de datos según la frecuencia configurada</p>
+            </div>
+        </div>
+
+        <!-- Gráfico Simulado -->
+        <div class="sensor-container">
+            <h2 style="color:#764ba2;margin-bottom:20px;">📈 Variación de Temperatura - Últimas 24 Horas</h2>
+            <div style="background:#f8f9fa;padding:30px;border-radius:10px;">
+                <div id="tempChart"
+                     style="display:flex;justify-content:space-around;align-items:flex-end;height:200px;"></div>
+                <div style="display:flex;justify-content:space-around;margin-top:10px;font-size:12px;color:#666;">
+                    <span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span>
+                    <span>16:00</span><span>20:00</span><span>24:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial -->
+        <div class="sensor-container">
+            <h2 style="color:#764ba2;margin-bottom:20px;">📊 Registro de Lecturas</h2>
+            <div class="scroll-limited">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f8f9fa;">
+                            <th style="padding:12px;border-bottom:2px solid #dee2e6;">Hora</th>
+                            <th style="padding:12px;border-bottom:2px solid #dee2e6;">Ubicación</th>
+                            <th style="padding:12px;border-bottom:2px solid #dee2e6;">Temperatura</th>
+                            <th style="padding:12px;border-bottom:2px solid #dee2e6;">Período</th>
+                            <th style="padding:12px;border-bottom:2px solid #dee2e6;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tempHistoryTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div> <!-- END DASHBOARD -->
+
+    <!-- JS REAL-TIME -->
+    <script>
+        const locations = ['Invernadero Principal', 'Zona de Propagación', 'Exterior'];
+
+        function getCurrentPeriod() {
+            const hour = new Date().getHours();
+            return (hour >= 6 && hour < 18) ? 'Día' : 'Noche';
+        }
+
+        function getOptimalRange() {
+            const p = getCurrentPeriod();
+            return p === 'Día' ? { min: 22, max: 24 } : { min: 18, max: 20 };
+        }
+
+        function updateTemperatureSensors() {
+            const period = getCurrentPeriod();
+            const optimal = getOptimalRange();
+            const alerts = [];
+
+            for (let i = 1; i <= 3; i++) {
+                let temp = (i === 3)
+                    ? (Math.random() * 15 + 15).toFixed(1)
+                    : (Math.random() * 8 + 17).toFixed(1);
+
+                document.getElementById(`temp${i}`).textContent = temp + '°C';
+
+                let status;
+                if (i === 3) {
+                    status = "📊 Referencia";
+                } else if (temp >= optimal.min && temp <= optimal.max) {
+                    status = `✅ Óptimo para ${period}`;
+                } else if (temp < optimal.min) {
+                    status = `❄️ Frío (${period})`;
+                    alerts.push(`${locations[i - 1]}: Baja (${temp}°C)`);
+                } else {
+                    status = `🔥 Caliente (${period})`;
+                    alerts.push(`${locations[i - 1]}: Alta (${temp}°C)`);
+                }
+
+                document.getElementById(`tempStatus${i}`).textContent = status;
+
+                addToTempHistory(i, temp, period, status);
+            }
+
+            displayAlerts(alerts);
+        }
+
+        function displayAlerts(alerts) {
+            const c = document.getElementById("temperatureAlerts");
+            if (alerts.length === 0) {
+                c.innerHTML = `
+                    <div style="background:#e6fff0;padding:15px;border-radius:10px;border-left:4px solid #26de81;">
+                        <strong style="color:#155724;">✔ Todas las temperaturas están en rango óptimo</strong>
+                    </div>`;
+            } else {
+                c.innerHTML = `
+                    <div style="background:#fff3cd;padding:15px;border-radius:10px;border-left:4px solid #ffc107;">
+                        <strong style="color:#856404;">⚠ Alertas:</strong>
+                        ${alerts.map(a => `<div>• ${a}</div>`).join("")}
+                    </div>`;
+            }
+        }
+
+        function addToTempHistory(sensorId, temp, period, status) {
+            const table = document.getElementById("tempHistoryTable");
+            const timeStr = new Date().toLocaleTimeString();
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td style="padding:12px;">${timeStr}</td>
+                <td style="padding:12px;">${locations[sensorId - 1]}</td>
+                <td style="padding:12px;">${temp}°C</td>
+                <td style="padding:12px;">${period}</td>
+                <td style="padding:12px;">${status}</td>`;
+
+            table.prepend(row);
+            if (table.children.length > 12) table.removeChild(table.lastChild);
+        }
+
+        function createTempChart() {
+            const chart = document.getElementById("tempChart");
+            let html = "";
+            for (let i = 0; i < 7; i++) {
+                const temp = Math.random() * 6 + 18;
+                const height = (temp / 30) * 100;
+                const color = temp >= 18 && temp <= 24 ? "#26de81" : "#ffa502";
+
+                html += `
+                <div style="flex:1;text-align:center;">
+                    <small>${temp.toFixed(1)}°C</small>
+                    <div style="width:40px;height:${height}%;background:${color};border-radius:5px 5px 0 0;"></div>
+                </div>`;
+            }
+            chart.innerHTML = html;
+        }
+
+        setInterval(updateTemperatureSensors, 5000);
+        updateTemperatureSensors();
+        createTempChart();
+
+        // LOADER
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("loader");
+            loader.classList.add("fade-out");
+
+            setTimeout(() => {
+                loader.style.display = "none";
+            }, 500);
+        });
+    </script>
+
+</body>
+</html>

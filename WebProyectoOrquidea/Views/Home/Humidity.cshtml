@@ -1,0 +1,186 @@
+﻿@{
+    ViewData["Title"] = "Monitor de Humedad - OrchidCare";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css">
+</head>
+
+<body class="humidity-background">
+    <!--  LOADER   -->
+    <div id="loader">
+        <div class="loader-icon" style="font-size:70px;">
+            🌸
+        </div>
+    </div>
+    <!--  FIN LOADER -->
+
+    <!-- TOPBAR ESPECIAL PARA HUMEDAD --> 
+    <div class="humidity-topbar">
+        <div class="left-section">
+            <h1 class="topbar-title">💧 Monitor de Humedad Ambiente</h1>
+        </div>
+
+        <div class="right-section">
+            <button onclick="location.href='@Url.Action("Dashboard", "Home")'"
+                    class="btn-back">
+                ← Volver al Menú Principal
+            </button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="dashboard">
+
+        <!-- Sensor Principal -->
+        <div class="sensor-container">
+
+            <div class="sensor-header">
+                <h2 style="color: #764ba2;">📡 Sensor de Humedad - Tiempo Real</h2>
+
+                <div>
+                    <button onclick="location.reload()" class="btn-primary">🔄 Actualizar</button>
+                </div>
+            </div>
+
+            <div class="sensor-grid">
+                <div class="sensor-card humidity-card">
+                    <div class="sensor-label">Sensor 1 - Zona A</div>
+                    <div class="sensor-value" id="humidity1">--</div>
+                    <div class="sensor-status" id="status1">Conectando...</div>
+                </div>
+
+                <div class="sensor-card humidity-card">
+                    <div class="sensor-label">Sensor 2 - Zona B</div>
+                    <div class="sensor-value" id="humidity2">--</div>
+                    <div class="sensor-status" id="status2">Conectando...</div>
+                </div>
+
+                <div class="sensor-card humidity-card">
+                    <div class="sensor-label">Sensor 3 - Zona C</div>
+                    <div class="sensor-value" id="humidity3">--</div>
+                    <div class="sensor-status" id="status3">Conectando...</div>
+                </div>
+            </div>
+            <br />
+            <br />
+            <!-- Sección próximos riegos -->
+            <div class="sensor-container" style="background: #e6fff0; border-left: 4px solid #26de81;">
+                <h2 style="color:#2d8659; margin-bottom: 20px; display:flex; align-items:center; gap:10px;">
+                    💧 Próximos Riegos Programados
+                </h2>
+
+                <!-- ITEM 1 -->
+                <div class="schedule-item-humidity">
+                    <div>
+                        <strong>Orquídea Phalaenopsis (Zona A)</strong><br>
+                        <small style="color:#666;">Próximo riego: 2024-11-16 08:00</small>
+                    </div>
+                    <span class="schedule-badge">Mañana</span>
+                </div>
+
+                <!-- ITEM 2 -->
+                <div class="schedule-item-humidity">
+                    <div>
+                        <strong>Orquídea Cattleya (Zona B)</strong><br>
+                        <small style="color:#666;">Próximo riego: 2024-11-15 18:00</small>
+                    </div>
+                    <span class="schedule-badge">Hoy</span>
+                </div>
+
+                <!-- ITEM 3 -->
+                <div class="schedule-item-humidity">
+                    <div>
+                        <strong>Orquídea Dendrobium (Zona C)</strong><br>
+                        <small style="color:#666;">Próximo riego: 2024-11-17 09:00</small>
+                    </div>
+                    <span class="schedule-badge">En 2 días</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div class="sensor-container">
+            <h2 style="color: #764ba2;">📊 Últimas Lecturas (Simulado)</h2>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Hora</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Sensor</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Humedad</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const OPTIMAL_MIN = 40;
+        const OPTIMAL_MAX = 70;
+
+        const wateringSchedule = [
+            { plant: 'Orquídea Phalaenopsis (Zona A)', nextWatering: '2024-11-16 08:00', status: 'Mañana' },
+            { plant: 'Orquídea Cattleya (Zona B)', nextWatering: '2024-11-15 18:00', status: 'Hoy' },
+            { plant: 'Orquídea Dendrobium (Zona C)', nextWatering: '2024-11-17 09:00', status: 'En 2 días' }
+        ];
+
+
+        function updateHumiditySensors() {
+            for (let i = 1; i <= 3; i++) {
+                const humidity = (Math.random() * 40 + 40).toFixed(1);
+                document.getElementById(`humidity${i}`).textContent = humidity + '%';
+
+                let status;
+                if (humidity >= OPTIMAL_MIN && humidity <= OPTIMAL_MAX) status = '✅ Óptimo';
+                else if (humidity < OPTIMAL_MIN) status = '⚠️ Seco - Requiere Riego';
+                else status = '⚠️ Muy Húmedo';
+
+                document.getElementById(`status${i}`).textContent = status;
+
+                addToHistory(i, humidity, status);
+            }
+        }
+
+        function addToHistory(sensorId, humidity, status) {
+            const table = document.getElementById('historyTable');
+            const time = new Date().toLocaleTimeString();
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="padding: 12px;">${time}</td>
+                <td style="padding: 12px;">Sensor ${sensorId}</td>
+                <td style="padding: 12px;"><strong>${humidity}%</strong></td>
+                <td style="padding: 12px;">${status}</td>
+            `;
+
+            table.insertBefore(row, table.firstChild);
+            if (table.children.length > 10) table.removeChild(table.lastChild);
+        }
+
+        setInterval(updateHumiditySensors, 5000);
+        updateHumiditySensors();
+        // ⬇️⬇️⬇️ SCRIPT DEL LOADER ⬇️⬇️⬇️
+                window.addEventListener("load", () => {
+                    const loader = document.getElementById("loader");
+                    loader.classList.add("fade-out");
+
+                    setTimeout(() => {
+                        loader.style.display = "none";
+                    }, 500);
+                });
+                // ⬆️⬆️⬆️ FIN SCRIPT LOADER ⬆️⬆️⬆️
+    </script>
+
+</body>
+</html>

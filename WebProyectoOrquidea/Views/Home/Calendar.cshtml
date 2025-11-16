@@ -1,0 +1,336 @@
+﻿@{
+    ViewData["Title"] = "Calendario de Riego - OrchidCare";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css">
+</head>
+<body class="dashboard-background">
+    <!--  LOADER   -->
+    <div id="loader">
+        <div class="loader-icon" style="font-size:70px;">
+            🌸
+        </div>
+    </div>
+    <!--  FIN LOADER -->
+    <div class="topbar">
+        <div>
+            <h1>📅 Calendario de Riego de Orquídeas</h1>
+        </div>
+
+        <div class="user-info">
+            <button onclick="location.href='@Url.Action("Dashboard", "Home")'"
+                    style="padding: 8px 15px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                ← Volver al Menú Principal
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+
+        <!-- Notificaciones de Riego -->
+        <div class="notifications-panel">
+            <h2 style="margin-bottom: 20px; color: #764ba2;">🔔 Notificaciones de Riego Activas</h2>
+            <div id="wateringNotifications">
+                <!-- Notificaciones dinámicas -->
+            </div>
+        </div>
+
+        <!-- Formulario para Agregar Riego -->
+        <div class="calendar-section">
+            <h2 style="color: #764ba2; margin-bottom: 20px;">➕ Programar Nuevo Riego</h2>
+
+            <form id="wateringForm" onsubmit="addWateringSchedule(event)">
+                <div class="calendar-form">
+                    
+                    <div class="form-group">
+                        <label for="plantName">Nombre de la Orquídea</label>
+                        <input type="text" id="plantName" class="form-control" required placeholder="Ej: Phalaenopsis #1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="plantZone">Zona</label>
+                        <select id="plantZone" class="form-control" required>
+                            <option value="">Seleccione zona</option>
+                            <option value="A">Zona A</option>
+                            <option value="B">Zona B</option>
+                            <option value="C">Zona C</option>
+                            <option value="D">Zona D</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wateringDate">Fecha de Riego</label>
+                        <input type="date" id="wateringDate" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wateringTime">Hora de Riego</label>
+                        <input type="time" id="wateringTime" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="frequency">Frecuencia</label>
+                        <select id="frequency" class="form-control" required>
+                            <option value="">Seleccione frecuencia</option>
+                            <option value="diario">Diario</option>
+                            <option value="cada2dias">Cada 2 días</option>
+                            <option value="cada3dias">Cada 3 días</option>
+                            <option value="semanal">Semanal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notificationMethod">Método de Notificación</label>
+                        <select id="notificationMethod" class="form-control" required>
+                            <option value="all">Todos (SMS + Email + Web)</option>
+                            <option value="sms">Solo SMS</option>
+                            <option value="email">Solo Email</option>
+                            <option value="web">Solo Web</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 20px;">
+                    💾 Guardar Calendario de Riego
+                </button>
+            </form>
+
+            <div class="db-placeholder" style="margin-top: 20px;">
+                <h3>🗄️ Conexión con Base de Datos</h3>
+                <p>Los calendarios de riego se guardarán en la tabla: <strong>CalendarioRiego</strong></p>
+                <p style="font-size: 12px; margin-top: 10px; color: #856404;">
+                    Campos: ID, NombrePlanta, Zona, FechaRiego, HoraRiego, Frecuencia, MetodoNotificacion, Estado, FechaCreacion
+                </p>
+            </div>
+        </div>
+
+        <!-- Lista de Riegos -->
+        <div class="calendar-section" style="margin-top: 30px;">
+            <h2 style="color: #764ba2; margin-bottom: 20px;">📋 Riegos Programados</h2>
+            <div class="schedule-list" id="scheduleList"></div>
+        </div>
+
+        <!-- Riegos de Hoy -->
+        <div class="calendar-section" style="margin-top: 30px;">
+            <h2 style="color: #764ba2; margin-bottom: 20px;">🌊 Riegos de Hoy</h2>
+            <div id="todayWatering"></div>
+        </div>
+    </div>
+
+    <!-- SCRIPT COMPLETO (SIN CAMBIOS) -->
+    <script>
+        function logout() {
+            if (confirm('¿Desea cerrar sesión?')) {
+                window.location.href = '@Url.Action("Login", "Home")';
+            }
+        }
+
+        let wateringSchedules = [
+            {
+                id: 1,
+                plantName: 'Phalaenopsis Blanca',
+                zone: 'A',
+                date: '2024-11-15',
+                time: '08:00',
+                frequency: 'cada2dias',
+                notificationMethod: 'all',
+                active: true
+            },
+            {
+                id: 2,
+                plantName: 'Cattleya Rosada',
+                zone: 'B',
+                date: '2024-11-15',
+                time: '18:00',
+                frequency: 'cada3dias',
+                notificationMethod: 'all',
+                active: true
+            },
+            {
+                id: 3,
+                plantName: 'Dendrobium Amarilla',
+                zone: 'C',
+                date: '2024-11-16',
+                time: '09:00',
+                frequency: 'diario',
+                notificationMethod: 'sms',
+                active: true
+            }
+        ];
+
+        function addWateringSchedule(event) {
+            event.preventDefault();
+
+            const newSchedule = {
+                id: wateringSchedules.length + 1,
+                plantName: document.getElementById('plantName').value,
+                zone: document.getElementById('plantZone').value,
+                date: document.getElementById('wateringDate').value,
+                time: document.getElementById('wateringTime').value,
+                frequency: document.getElementById('frequency').value,
+                notificationMethod: document.getElementById('notificationMethod').value,
+                active: true
+            };
+
+            wateringSchedules.push(newSchedule);
+            showNotification(`✅ Calendario creado para ${newSchedule.plantName}`, 'success');
+            document.getElementById('wateringForm').reset();
+            renderScheduleList();
+            renderTodayWatering();
+        }
+
+        function deleteSchedule(id) {
+            if (confirm('¿Está seguro de eliminar este calendario de riego?')) {
+                wateringSchedules = wateringSchedules.filter(s => s.id !== id);
+                showNotification('🗑️ Calendario eliminado', 'warning');
+                renderScheduleList();
+                renderTodayWatering();
+            }
+        }
+
+        function toggleSchedule(id) {
+            const schedule = wateringSchedules.find(s => s.id === id);
+            if (!schedule) return;
+
+            schedule.active = !schedule.active;
+            showNotification(
+                schedule.active ? '✅ Calendario activado' : '⏸️ Calendario pausado',
+                'success'
+            );
+            renderScheduleList();
+        }
+
+        function getNotificationIcon(method) {
+            const icons = {
+                'all': '📱📧🌐',
+                'sms': '📱',
+                'email': '📧',
+                'web': '🌐'
+            };
+            return icons[method] || '🔔';
+        }
+
+        function getFrequencyText(freq) {
+            const texts = {
+                'diario': 'Diario',
+                'cada2dias': 'Cada 2 días',
+                'cada3dias': 'Cada 3 días',
+                'semanal': 'Semanal'
+            };
+            return texts[freq] || freq;
+        }
+
+        function renderScheduleList() {
+            const container = document.getElementById('scheduleList');
+
+            if (wateringSchedules.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#666;">No hay calendarios programados</p>';
+                return;
+            }
+
+            container.innerHTML = wateringSchedules.map(schedule => `
+                <div class="schedule-item ${schedule.active ? 'active' : ''}" style="${!schedule.active ? 'opacity:0.6;' : ''}">
+                    <div style="flex:1;">
+                        <h3 style="margin-bottom:8px;color:#764ba2;">
+                            💧 ${schedule.plantName}
+                            <span style="background:#667eea;color:white;padding:4px 10px;border-radius:15px;font-size:12px;margin-left:10px;">
+                                Zona ${schedule.zone}
+                            </span>
+                        </h3>
+                        <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:14px;color:#666;">
+                            <span>📅 ${schedule.date}</span>
+                            <span>🕐 ${schedule.time}</span>
+                            <span>🔄 ${getFrequencyText(schedule.frequency)}</span>
+                            <span>🔔 ${getNotificationIcon(schedule.notificationMethod)}</span>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <button onclick="toggleSchedule(${schedule.id})"
+                                style="padding:8px 15px;background:${schedule.active ? '#ffa502' : '#26de81'};color:white;border:none;border-radius:6px;cursor:pointer;">
+                            ${schedule.active ? '⏸️ Pausar' : '▶️ Activar'}
+                        </button>
+                        <button onclick="deleteSchedule(${schedule.id})" class="btn-delete">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTodayWatering() {
+            const today = new Date().toISOString().split('T')[0];
+            const todaySchedules = wateringSchedules.filter(s => s.date === today && s.active);
+            const container = document.getElementById('todayWatering');
+
+            if (todaySchedules.length === 0) {
+                container.innerHTML =
+                    '<p style="text-align:center;color:#666;padding:20px;background:#f8f9fa;border-radius:10px;">No hay riegos programados para hoy</p>';
+                return;
+            }
+
+            container.innerHTML = todaySchedules.map(schedule => `
+                <div style="padding:20px;background:#e6fff0;border-radius:10px;margin-bottom:15px;border-left:4px solid #26de81;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <h3 style="color:#155724;margin-bottom:5px;">💧 ${schedule.plantName}</h3>
+                            <p style="color:#666;margin:0;">Hora programada: <strong>${schedule.time}</strong> | Zona ${schedule.zone}</p>
+                        </div>
+                        <span style="padding:10px 20px;background:#26de81;color:white;border-radius:20px;font-weight:bold;">
+                            ⏰ HOY
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showNotification(message, type) {
+            const container = document.getElementById('wateringNotifications');
+            const notifDiv = document.createElement('div');
+            notifDiv.className = `notification-item ${type}`;
+
+            notifDiv.innerHTML = `
+                <div>
+                    <strong>${message}</strong>
+                    <div class="notification-channels">
+                        <span>📧 Email</span>
+                        <span>📱 SMS</span>
+                        <span>🌐 Web</span>
+                    </div>
+                </div>
+                <small style="color:#666;">${new Date().toLocaleTimeString()}</small>
+            `;
+
+            container.insertBefore(notifDiv, container.firstChild);
+            if (container.children.length > 3) container.removeChild(container.lastChild);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('wateringDate').min = today;
+            document.getElementById('wateringDate').value = today;
+
+            renderScheduleList();
+            renderTodayWatering();
+            showNotification('📅 Sistema de calendario activo - Monitoreando riegos programados', 'success');
+        });
+        // ⬇️⬇️⬇️ SCRIPT DEL LOADER ⬇️⬇️⬇️
+               window.addEventListener("load", () => {
+                   const loader = document.getElementById("loader");
+                   loader.classList.add("fade-out");
+
+                   setTimeout(() => {
+                       loader.style.display = "none";
+                   }, 500);
+               });
+               // ⬆️⬆️⬆️ FIN SCRIPT LOADER ⬆️⬆️⬆️
+
+    </script>
+
+</body>
+</html>
