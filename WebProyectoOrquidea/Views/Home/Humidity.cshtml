@@ -19,8 +19,7 @@
         </div>
     </div>
     <!--  FIN LOADER -->
-
-    <!-- TOPBAR ESPECIAL PARA HUMEDAD --> 
+    <!-- TOPBAR ESPECIAL PARA HUMEDAD -->
     <div class="humidity-topbar">
         <div class="left-section">
             <h1 class="topbar-title">💧 Monitor de Humedad Ambiente</h1>
@@ -73,104 +72,104 @@
                 </div>
             </div>
             <br />
-            <br />           
+            <br />
 
-        <!-- HISTORIAL -->
-        <div class="sensor-container">
-            <h2 style="color: #764ba2;">📊 Últimas Lecturas (Simulado)</h2>
+            <!-- HISTORIAL -->
+            <div class="sensor-container">
+                <h2 style="color: #764ba2;">📊 Últimas Lecturas (Simulado)</h2>
 
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f8f9fa;">
-                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Fecha</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Hora</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Zona</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Sensor</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Humedad</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTable"></tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Fecha</th>
+                                <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Hora</th>
+                                <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Zona</th>
+                                <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Sensor</th>
+                                <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Humedad</th>
+                                <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        const OPTIMAL_MIN = 40;
-        const OPTIMAL_MAX = 70;
+        <script>
+            const OPTIMAL_MIN = 40;
+            const OPTIMAL_MAX = 70;
 
-        function updateHumiditySensors() {
-            for (let i = 1; i <= 4; i++) {
-                let zone;
-                const humidity = (Math.random() * 40 + 40).toFixed(1);
-                document.getElementById(`humidity${i}`).textContent = humidity + '%';
+            function updateHumiditySensors() {
+                for (let i = 1; i <= 4; i++) {
+                    let zone;
+                    const humidity = (Math.random() * 40 + 40).toFixed(1);
+                    document.getElementById(`humidity${i}`).textContent = humidity + '%';
 
-                let status;
-                if (humidity >= OPTIMAL_MIN && humidity <= OPTIMAL_MAX) status = '✅ Óptimo';
-                else if (humidity < OPTIMAL_MIN) status = '⚠️ Seco - Requiere Riego';
-                else status = '⚠️ Muy Húmedo';
+                    let status;
+                    if (humidity >= OPTIMAL_MIN && humidity <= OPTIMAL_MAX) status = '✅ Óptimo';
+                    else if (humidity < OPTIMAL_MIN) status = '⚠️ Seco - Requiere Riego';
+                    else status = '⚠️ Muy Húmedo';
 
-                document.getElementById(`status${i}`).textContent = status;
-                switch (i){
-                    case 1:
-                        zone = "Zona A";
-                        break;
+                    document.getElementById(`status${i}`).textContent = status;
+                    switch (i){
+                        case 1:
+                            zone = "Zona A";
+                            break;
 
-                    case 2:
-                        zone = "Zona B";
-                        break;
+                        case 2:
+                            zone = "Zona B";
+                            break;
 
-                    case 3:
-                        zone = "Zona C";
-                        break;
+                        case 3:
+                            zone = "Zona C";
+                            break;
 
-                    case 4:
-                        zone = "Área de Plantines";
-                        break;
+                        case 4:
+                            zone = "Área de Plantines";
+                            break;
 
-                    default:
-                        zone = "Zona desconocida";
-                        break;
+                        default:
+                            zone = "Zona desconocida";
+                            break;
+                    }
+
+                    addToHistory(zone,i, humidity, status);
                 }
-
-                addToHistory(zone,i, humidity, status);
             }
-        }
 
-        function addToHistory(zone ,sensorId, humidity, status) {
-            const table = document.getElementById('historyTable');
-            const date = new Date().getDate().toString();
-            const time = new Date().toLocaleTimeString();
+            function addToHistory(zone ,sensorId, humidity, status) {
+                const table = document.getElementById('historyTable');
+                const date = new Date().getDate().toString();
+                const time = new Date().toLocaleTimeString();
 
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td style="padding: 12px;">${date}</td>
-                <td style="padding: 12px;">${time}</td>
-                <td style="padding: 12px;">${zone}</td>
-                <td style="padding: 12px;">Sensor ${sensorId}</td>
-                <td style="padding: 12px;"><strong>${humidity}%</strong></td>
-                <td style="padding: 12px;">${status}</td>
-            `;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 12px;">${date}</td>
+                    <td style="padding: 12px;">${time}</td>
+                    <td style="padding: 12px;">${zone}</td>
+                    <td style="padding: 12px;">Sensor ${sensorId}</td>
+                    <td style="padding: 12px;"><strong>${humidity}%</strong></td>
+                    <td style="padding: 12px;">${status}</td>
+                `;
 
-            table.insertBefore(row, table.firstChild);
-            if (table.children.length > 10) table.removeChild(table.lastChild);
-        }
+                table.insertBefore(row, table.firstChild);
+                if (table.children.length > 10) table.removeChild(table.lastChild);
+            }
 
-        setInterval(updateHumiditySensors, 5000);
-        updateHumiditySensors();
-        // ⬇️⬇️⬇️ SCRIPT DEL LOADER ⬇️⬇️⬇️
-                window.addEventListener("load", () => {
-                    const loader = document.getElementById("loader");
-                    loader.classList.add("fade-out");
+            setInterval(updateHumiditySensors, 5000);
+            updateHumiditySensors();
+            // ⬇️⬇️⬇️ SCRIPT DEL LOADER ⬇️⬇️⬇️
+                    window.addEventListener("load", () => {
+                        const loader = document.getElementById("loader");
+                        loader.classList.add("fade-out");
 
-                    setTimeout(() => {
-                        loader.style.display = "none";
-                    }, 500);
-                });
-                // ⬆️⬆️⬆️ FIN SCRIPT LOADER ⬆️⬆️⬆️
-    </script>
+                        setTimeout(() => {
+                            loader.style.display = "none";
+                        }, 500);
+                    });
+                    // ⬆️⬆️⬆️ FIN SCRIPT LOADER ⬆️⬆️⬆️
+        </script>
 
 </body>
 </html>
