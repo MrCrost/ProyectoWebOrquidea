@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OrchidCareSystem.Controllers;
+using WebProyectoOrquidea.Models;
+using System;
+using System.Threading.Tasks;
 
 namespace WebProyectoOrquidea.Controllers
 {
@@ -109,13 +112,6 @@ namespace WebProyectoOrquidea.Controllers
                     // SendWebPushNotification(model.Message);
                 }
 
-                // Guardar registro en BD
-                /*
-                var query = @"INSERT INTO HistorialNotificaciones 
-                             (TipoNotificacion, Mensaje, FechaEnvio, Estado)
-                             VALUES (@Tipo, @Mensaje, GETDATE(), 'Enviado')";
-                */
-
                 return Json(new { success = true, message = "Notificación enviada" });
             }
             catch (Exception ex)
@@ -127,26 +123,24 @@ namespace WebProyectoOrquidea.Controllers
 
         // POST: Guardar Calendario de Riego
         [HttpPost]
-        public IActionResult SaveWateringSchedule(WateringScheduleModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveWateringSchedule(CalendarioRiego model)
         {
             try
             {
-                // AQUÍ SE CONECTARÍA CON LA BASE DE DATOS
-                // Ejemplo de lo que se haría:
+                if (model is null)
+                    return Json(new { success = false, message = "Datos vacíos" });
 
-                /*
-                using (var connection = new SqlConnection(connectionString))
-                {
-                    var query = @"INSERT INTO CalendarioRiego 
-                                  (NombrePlanta, Zona, FechaRiego, HoraRiego, Frecuencia, MetodoNotificacion, Estado, FechaCreacion)
-                                  VALUES 
-                                  (@NombrePlanta, @Zona, @FechaRiego, @HoraRiego, @Frecuencia, @MetodoNotificacion, 1, GETDATE())";
-                    
-                    connection.Execute(query, model);
-                }
-                */
+                if (!ModelState.IsValid)
+                    return Json(new { success = false, message = "Modelo inválido", errors = ModelState });
+                                
+                if (model.EstadoNotificacion == 0)
+                    model.EstadoNotificacion = 1; 
 
-                return Json(new { success = true, message = "Calendario guardado exitosamente" });
+                // Llamada al método del modelo que inserta en BD
+                var newId = await model.AgregarCalendario(model);
+
+                return Json(new { success = true, message = "Calendario guardado exitosamente", id = newId });
             }
             catch (Exception ex)
             {

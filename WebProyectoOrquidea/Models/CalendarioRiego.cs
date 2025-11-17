@@ -1,5 +1,8 @@
 ﻿using MySql.Data.MySqlClient;
 using Reloj_Control.ConexionDB;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace WebProyectoOrquidea.Models
 {
@@ -7,7 +10,7 @@ namespace WebProyectoOrquidea.Models
     {
         public int IdOrquidea { get; set; }
         public string NombreOrquidea { get; set; }
-        public string Zone { get; set; }
+        public string Zona { get; set; }
         public int DiaRiego { get; set; }
         public TimeSpan HoraRiego { get; set; }
         public int Frecuencia { get; set; }
@@ -21,9 +24,9 @@ namespace WebProyectoOrquidea.Models
             using var cn = DB.GetConnection();
 
             const string sql = @"
-                SELECT IdOrquidea, NombreOrquidea, Zone, DiaRiego, HoraRiego, Frecuencia, MetodoNotificacion, EstadoNotificacion
+                SELECT IdOrquidea, NombreOrquidea, Zona, DiaRiego, HoraRiego, Frecuencia, MetodoNotificacion, EstadoNotificacion
                 FROM CalendarioRiego
-                ORDER BY id;";
+                ORDER BY IdOrquidea;";
             using var cmd = new MySqlCommand(sql, cn);
 
             using var rd = (MySqlDataReader)await cmd.ExecuteReaderAsync();
@@ -33,7 +36,7 @@ namespace WebProyectoOrquidea.Models
                 {
                     IdOrquidea = rd.GetInt32("IdOrquidea"),
                     NombreOrquidea = rd.GetString("NombreOrquidea"),
-                    Zone = rd.GetString("Zone"),
+                    Zona = rd.GetString("Zona"),
                     DiaRiego = rd.GetInt32("DiaRiego"),
                     HoraRiego = rd.GetTimeSpan("HoraRiego"),
                     Frecuencia = rd.GetInt32("Frecuencia"),
@@ -51,12 +54,12 @@ namespace WebProyectoOrquidea.Models
 
             const string sql = @"
                 INSERT INTO CalendarioRiego
-                (NombreOrquidea, Zone, DiaRiego, HoraRiego, Frecuencia, MetodoNotificacion,EstadoNotificacion)
+                (NombreOrquidea, Zona, DiaRiego, HoraRiego, Frecuencia, MetodoNotificacion, EstadoNotificacion)
                 VALUES (@n,@z,@d,@h,@f,@m,@e);
                 SELECT LAST_INSERT_ID();";
             using var cmd = new MySqlCommand(sql, cn);
             cmd.Parameters.AddWithValue("@n", c.NombreOrquidea);
-            cmd.Parameters.AddWithValue("@z", c.Zone);
+            cmd.Parameters.AddWithValue("@z", c.Zona);
             cmd.Parameters.AddWithValue("@d", c.DiaRiego);
             cmd.Parameters.AddWithValue("@h", c.HoraRiego);
             cmd.Parameters.AddWithValue("@f", c.Frecuencia);
@@ -73,8 +76,8 @@ namespace WebProyectoOrquidea.Models
 
             const string sql = @"
                 UPDATE CalendarioRiego
-                SET  EstadoNotificacion=@e
-                WHERE id=@id;";
+                SET EstadoNotificacion = @e
+                WHERE IdOrquidea = @id;";
             using var cmd = new MySqlCommand(sql, cn);
             cmd.Parameters.AddWithValue("@id", c.IdOrquidea);
             cmd.Parameters.AddWithValue("@e", c.EstadoNotificacion);
@@ -86,11 +89,10 @@ namespace WebProyectoOrquidea.Models
         {
             using var cn = DB.GetConnection();
 
-            const string sql = "DELETE FROM CalendarioRiego WHERE id=@id;";
+            const string sql = "DELETE FROM CalendarioRiego WHERE IdOrquidea = @id;"; 
             using var cmd = new MySqlCommand(sql, cn);
             cmd.Parameters.AddWithValue("@id", id);
             await cmd.ExecuteNonQueryAsync();
         }
-
     }
 }
