@@ -134,11 +134,6 @@
 
     <!-- SCRIPT COMPLETO (SIN CAMBIOS) -->
     <script>
-        function logout() {
-            if (confirm('¿Desea cerrar sesión?')) {
-                window.location.href = '@Url.Action("Login", "Home")';
-            }
-        }
 
         let wateringSchedules = [
             {
@@ -173,6 +168,7 @@
             }
         ];
 
+        // Funcion de Agregar Alerta
         function addWateringSchedule(event) {
             event.preventDefault();
 
@@ -194,6 +190,7 @@
             renderTodayWatering();
         }
 
+        // Funcion eliminar Alerta
         function deleteSchedule(id) {
             if (confirm('¿Está seguro de eliminar este calendario de riego?')) {
                 wateringSchedules = wateringSchedules.filter(s => s.id !== id);
@@ -203,6 +200,7 @@
             }
         }
 
+        // Funcion Activar o Pausar Alerta
         function toggleSchedule(id) {
             const schedule = wateringSchedules.find(s => s.id === id);
             if (!schedule) return;
@@ -215,6 +213,7 @@
             renderScheduleList();
         }
 
+        // Funcion Obtener iconos
         function getNotificationIcon(method) {
             const icons = {
                 'all': '📱📧🌐',
@@ -225,6 +224,7 @@
             return icons[method] || '🔔';
         }
 
+        // Funcion Obtener frecuencia en texto
         function getFrequencyText(freq) {
             const texts = {
                 1: '1 vez al dia',
@@ -235,6 +235,7 @@
             return texts[freq] || freq;
         }
 
+        // Funcion Obtener dia en texto
         function getDayText(day) {
             const texts = {
                 1: 'Lunes',
@@ -248,6 +249,7 @@
             return texts[day] || day;
         }
 
+        // Funcion renderizar lista de riegos
         function renderScheduleList() {
             const container = document.getElementById('scheduleList');
 
@@ -285,6 +287,7 @@
             `).join('');
         }
 
+        // Funcion renderizar riegos de hoy
         function renderTodayWatering() {
             let today = new Date().getDay();
             if (today === 0) today = 7;
@@ -312,6 +315,7 @@
             `).join('');
         }
 
+        // Funcion mostrar notificaciones
         function showNotification(message, type) {
             const container = document.getElementById('wateringNotifications');
             const notifDiv = document.createElement('div');
@@ -332,6 +336,7 @@
             container.insertBefore(notifDiv, container.firstChild);
             if (container.children.length > 3) container.removeChild(container.lastChild);
         }
+
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().getDay();

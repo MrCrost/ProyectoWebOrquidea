@@ -20,6 +20,7 @@
     </div>
     <!--  FIN LOADER -->
 
+
     <div class="topbar">
         <div>
             <h1 style="margin: 0;">🌸 OrchidCare</h1>
@@ -28,7 +29,7 @@
 
         <div class="user-info">
             <span style="color: #444;">Bienvenido, <strong>Admin</strong></span>
-            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            <button href="javascript:void(0);" class="btn-logout" onclick="logoutConfirm()">Cerrar Sesión</button>
         </div>
     </div>
 
@@ -172,9 +173,10 @@
 
         addNotification(notifications[0]);
 
-        function logout() {
+        // Enviar logout por POST usando el formulario oculto (envía token antiforgery)
+        function logoutConfirm() {
             if (confirm('¿Desea cerrar sesión?')) {
-                window.location.href = '@Url.Action("Login", "Home")';
+                window.location.href = '/Home/Logout';
             }
         }
 

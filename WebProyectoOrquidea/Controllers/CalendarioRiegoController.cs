@@ -4,6 +4,8 @@ using OrchidCareSystem.Controllers;
 using WebProyectoOrquidea.Models;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace WebProyectoOrquidea.Controllers
 {
@@ -147,6 +149,5 @@ namespace WebProyectoOrquidea.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
-
     }
 }

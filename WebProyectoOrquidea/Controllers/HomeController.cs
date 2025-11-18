@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -77,7 +79,18 @@ namespace OrchidCareSystem.Controllers
             Random random = new Random();
             return Math.Round(random.NextDouble() * 8 + 17, 1); // 17-25°C
         }
+
+        // POST: Logout 
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            
+            return RedirectToAction("Login", "Home");
+        }
+
     }
+
 
     //------------------ Eliminar lo de abajo cuando se agregue la base de datos ------------------------------------------------------------------------------
 
@@ -107,7 +120,7 @@ namespace OrchidCareSystem.Controllers
     {
         public int SensorId { get; set; }
         public double Value { get; set; }
-        public string SensorType { get; set; } // "Humidity " o "Temperature"
+        public string SensorType { get; set; } 
         public DateTime Timestamp { get; set; }
         public string Status { get; set; }
     }
