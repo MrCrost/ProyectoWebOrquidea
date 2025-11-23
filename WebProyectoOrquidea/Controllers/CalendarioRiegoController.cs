@@ -139,7 +139,7 @@ namespace WebProyectoOrquidea.Controllers
                 if (model.EstadoNotificacion == 0)
                     model.EstadoNotificacion = 1; 
 
-                // Llamada al método del modelo que inserta en BD
+                
                 var newId = await model.AgregarCalendario(model);
 
                 return Json(new { success = true, message = "Calendario guardado exitosamente", id = newId });
@@ -149,5 +149,7 @@ namespace WebProyectoOrquidea.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+
     }
 }
