@@ -763,3 +763,153 @@ body {
         .scroll-limited::-webkit-scrollbar-thumb:hover {
             background: #8a5db7;
         }
+
+
+/* ============================
+   HUMEDAD DEL SUELO (RECICLADO)
+   ============================ */
+
+/* Fondo del módulo */
+.soil-background {
+    background-image: url('/img/humedad_suelo_fondo.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+/* Topbar (derivado de humidity-topbar) */
+.soil-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 18px 40px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+    .soil-topbar .topbar-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: #2d8659; /* tono verde elegante */
+    }
+
+/* Contenedor principal */
+.soil-container {
+    margin-top: 130px;
+    padding-bottom: 40px;
+}
+
+/* Caja del filtro */
+.search-box {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 95%;
+    margin: auto;
+    margin-top: 20px;
+}
+
+/* Inputs estilo OrchidCare */
+.input-orchid {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #7d5fff;
+    border-radius: 10px;
+    outline: none;
+    transition: 0.3s;
+}
+
+    .input-orchid:focus {
+        border-color: #5f27cd;
+        box-shadow: 0 0 6px rgba(95,39,205,0.3);
+    }
+
+/* Botón de búsqueda */
+.btn-search {
+    margin-top: 22px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #00b894, #55efc4);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+    .btn-search:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 184, 148, 0.3);
+    }
+
+/* Tabla de lecturas */
+.table-section {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    width: 95%;
+    margin: 30px auto;
+}
+
+.orchid-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+    .orchid-table thead {
+        background: #f3e8ff;
+    }
+
+    .orchid-table th {
+        padding: 12px;
+        color: #6c3aa8;
+        font-weight: 700;
+    }
+
+    .orchid-table tbody tr {
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-radius: 12px;
+    }
+
+    .orchid-table td {
+        padding: 14px;
+        text-align: center;
+    }
+
+/* Estados */
+.estado-optimo {
+    color: #1aa35c;
+    font-weight: 700;
+}
+
+.estado-seco {
+    color: #e67e22;
+    font-weight: 700;
+}
+
+.estado-muyhumedo {
+    color: #0984e3;
+    font-weight: 700;
+}
+
+.menu-card.soil {
+    background: linear-gradient(135deg, #6ddf76 0%, #2e9f50 100%);
+    color: white;
+}
+
+    .menu-card.soil h2,
+    .menu-card.soil p {
+        color: white;
+    }

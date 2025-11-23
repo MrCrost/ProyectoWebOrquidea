@@ -1,5 +1,136 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "Humedad Suelo - OrchidCare";
 }
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css">
+</head>
+
+<body class="soil-background">
+
+    <!-- LOADER -->
+    <div id="loader">
+        <div class="loader-icon" style="font-size:70px;">
+            🌱
+        </div>
+    </div>
+    <!-- FIN LOADER -->
+
+    <!-- TOPBAR -->
+    <div class="soil-topbar">
+        <div class="left-section">
+            <h1 class="topbar-title">🌱 Monitor de Humedad del Suelo</h1>
+        </div>
+
+        <div class="right-section">
+            <button onclick="location.href='@Url.Action("Dashboard", "Home")'" class="btn-back">
+                ← Volver al menú principal
+            </button>
+        </div>
+    </div>
+    <!-- FIN TOPBAR -->
+
+    <div class="container soil-container">
+
+        <!-- FILTRO DE BÚSQUEDA -->
+        <div class="search-box">
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label>Zona</label>
+                    <select class="input-orchid">
+                        <option selected>Seleccione zona</option>
+                        <option>Zona A</option>
+                        <option>Zona B</option>
+                        <option>Zona C</option>
+                        <option>Área de Plantines</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" class="input-orchid" />
+                </div>
+
+                <div class="form-group">
+                    <label>Hora</label>
+                    <input type="time" class="input-orchid" />
+                </div>
+
+                <div class="form-group search-btn-wrapper">
+                    <button class="btn-search">Buscar</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TABLA DE LECTURAS -->
+        <div class="table-section">
+            <h2 class="section-title">
+                📊 Últimas Lecturas (Simulado)
+            </h2>
+
+            <table class="orchid-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Zona</th>
+                        <th>Sensor</th>
+                        <th>Humedad</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>22/11/2025</td>
+                        <td>11:20</td>
+                        <td>Zona A</td>
+                        <td>Sensor 1</td>
+                        <td>49.6%</td>
+                        <td><span class="estado-optimo">Óptimo</span></td>
+                    </tr>
+                    <tr>
+                        <td>22/11/2025</td>
+                        <td>11:22</td>
+                        <td>Zona B</td>
+                        <td>Sensor 2</td>
+                        <td>44.6%</td>
+                        <td><span class="estado-seco">Seco</span></td>
+                    </tr>
+                    <tr>
+                        <td>22/11/2025</td>
+                        <td>11:24</td>
+                        <td>Zona C</td>
+                        <td>Sensor 3</td>
+                        <td>53.4%</td>
+                        <td><span class="estado-optimo">Óptimo</span></td>
+                    </tr>
+                    <tr>
+                        <td>22/11/2025</td>
+                        <td>11:27</td>
+                        <td>Área de Plantines</td>
+                        <td>Sensor 4</td>
+                        <td>73.5%</td>
+                        <td><span class="estado-muyhumedo">Muy Húmedo</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        // Ocultar loader
+        window.onload = function () {
+            document.getElementById("loader").style.display = "none";
+        };
+    </script>
+
+</body>
+</html>
