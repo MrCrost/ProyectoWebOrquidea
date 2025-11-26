@@ -1,5 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
-using Reloj_Control.ConexionDB;
+using WebProyectoOrquidea.ConexionDB;
 
 namespace WebProyectoOrquidea.Models
 

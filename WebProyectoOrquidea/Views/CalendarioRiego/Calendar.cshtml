@@ -1,4 +1,6 @@
-﻿@{
+﻿@model WebProyectoOrquidea.Models.CalendarioRiego
+
+@{
     ViewData["Title"] = "Calendario de Riego - OrchidCare";
 }
 
@@ -40,22 +42,28 @@
                 <!-- Notificaciones dinámicas -->
             </div>
         </div>
+        <!-- Riegos de Hoy -->
+        <div class="calendar-section" style="margin-top: 30px;">
+            <h2 style="color: #764ba2; margin-bottom: 20px;">🌊 Riegos de Hoy</h2>
+            <div id="todayWatering"></div>
+        </div>
 
         <!-- Formulario para Agregar Riego -->
-        <div class="calendar-section">
+        <div class="calendar-section" style="margin-top: 30px;">
             <h2 style="color: #764ba2; margin-bottom: 20px;">➕ Programar Nuevo Riego</h2>
 
-            <form id="wateringForm" onsubmit="addWateringSchedule(event)">
+            <form asp-controller="CalendarioRiego" asp-action="SaveWateringSchedule" method="post" id="wateringForm">
+                @Html.AntiForgeryToken()
                 <div class="calendar-form">
 
                     <div class="form-group">
-                        <label for="plantName">Nombre de la Orquídea</label>
-                        <input type="text" id="plantName" class="form-control" required placeholder="Ej: Phalaenopsis #1">
+                        <label asp-for="NombreOrquidea"></label>
+                        <input asp-for="NombreOrquidea" class="form-control" required placeholder="Ej: Phalaenopsis #1" />
                     </div>
 
                     <div class="form-group">
-                        <label for="plantZone">Zona</label>
-                        <select id="plantZone" class="form-control" required>
+                        <label asp-for="Zona"></label>
+                        <select asp-for="Zona" class="form-control" required>
                             <option value="">Seleccione zona</option>
                             <option value="A">Zona A</option>
                             <option value="B">Zona B</option>
@@ -65,8 +73,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="wateringDay">Día de Riego</label>
-                        <select id="wateringDay" class="form-control" required>
+                        <label asp-for="DiaRiego"></label>
+                        <select asp-for="DiaRiego" type="number" min="1" class="form-control" required>
                             <option value="0">Seleccione el día</option>
                             <option value="1">Lunes</option>
                             <option value="2">Martes</option>
@@ -76,16 +84,17 @@
                             <option value="6">Sabado</option>
                             <option value="7">Domingo</option>
                         </select>
+
                     </div>
 
                     <div class="form-group">
-                        <label for="wateringTime">Hora de Riego</label>
-                        <input type="time" id="wateringTime" class="form-control" required>
+                        <label asp-for="HoraRiego"></label>
+                        <input asp-for="HoraRiego" type="time" step="1" class="form-control" required /> @* binder soporta "HH:mm" o "HH:mm:ss" *@
                     </div>
 
                     <div class="form-group">
-                        <label for="frequency">Frecuencia</label>
-                        <select id="frequency" class="form-control" required>
+                        <label asp-for="FrecuenciaRiego"></label>
+                        <select asp-for="FrecuenciaRiego" type="number" class="form-control" required>
                             <option value="">Seleccione frecuencia diaria</option>
                             <option value="1">1 vez al dia</option>
                             <option value="2">2 veces al dia</option>
@@ -95,14 +104,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="notificationMethod">Método de Notificación</label>
-                        <select id="notificationMethod" class="form-control" required>
+                        <label asp-for="MetodoNotificacion"></label>
+                        <select asp-for="MetodoNotificacion" class="form-control" required>
                             <option value="all">Todos (SMS + Email + Web)</option>
                             <option value="sms">Solo SMS</option>
                             <option value="email">Solo Email</option>
                             <option value="web">Solo Web</option>
                         </select>
-                    </div>
+                    </div>                    
+
+                    <input type="hidden" asp-for="EstadoNotificacion" value="true" />
                 </div>
 
                 <button type="submit" class="btn-primary" style="margin-top: 20px;">
@@ -118,92 +129,133 @@
             <div class="schedule-list" id="scheduleList"></div>
         </div>
 
-        <!-- Riegos de Hoy -->
-        <div class="calendar-section" style="margin-top: 30px;">
-            <h2 style="color: #764ba2; margin-bottom: 20px;">🌊 Riegos de Hoy</h2>
-            <div id="todayWatering"></div>
-        </div>
+        
     </div>
 
-    <!-- SCRIPT COMPLETO (SIN CAMBIOS) -->
+    <!-- SCRIPT COMPLETO (AJUSTADO PARA CARGAR DATOS DEL SERVIDOR) -->
     <script>
+        // array que contendrá los calendarios traídos del servidor
+        let wateringSchedules = [];
 
-        let wateringSchedules = [
-            {
-                id: 1,
-                plantName: 'Phalaenopsis Blanca',
-                zone: 'A',
-                day: 1,
-                time: '08:00',
-                frequency: 2,
-                notificationMethod: 'all',
-                active: true
-            },
-            {
-                id: 2,
-                plantName: 'Cattleya Rosada',
-                zone: 'B',
-                day: 3,
-                time: '18:00',
-                frequency: 3,
-                notificationMethod: 'all',
-                active: true
-            },
-            {
-                id: 3,
-                plantName: 'Dendrobium Amarilla',
-                zone: 'C',
-                day: 7,
-                time: '09:00',
-                frequency: 1,
-                notificationMethod: 'sms',
-                active: true
-            }
-        ];
-
-        // Funcion de Agregar Alerta
-        function addWateringSchedule(event) {
-            event.preventDefault();
-
-            const newSchedule = {
-                id: wateringSchedules.length + 1,
-                plantName: document.getElementById('plantName').value,
-                zone: document.getElementById('plantZone').value,
-                day: Number(document.getElementById('wateringDay').value),
-                time: document.getElementById('wateringTime').value,
-                frequency: Number(document.getElementById('frequency').value),
-                notificationMethod: document.getElementById('notificationMethod').value,
-                active: true
-            };
-
-            wateringSchedules.push(newSchedule);
-            showNotification(`✅ Calendario creado para ${newSchedule.plantName}`, 'success');
-            document.getElementById('wateringForm').reset();
-            renderScheduleList();
-            renderTodayWatering();
+        // transforma la hora "HH:mm:ss" o "HH:mm" a "HH:mm"
+        function formatTime(timestr) {
+            if (!timestr) return '';
+            const parts = timestr.split(':');
+            return parts.length >= 2 ? `${parts[0].padStart(2,'0')}:${parts[1].padStart(2,'0')}` : timestr;
         }
+
+        // Función que carga los calendarios desde el servidor
+        async function loadSchedulesFromServer() {
+            try {
+                const res = await fetch('@Url.Action("MostrarCalendario","CalendarioRiego")', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+
+                
+                if (data && data.success === false && data.data) {
+                    wateringSchedules = data.data.map(mapServerToClient);
+                } else {
+                    
+                    wateringSchedules = (Array.isArray(data) ? data : []).map(mapServerToClient);
+                }
+
+                renderScheduleList();
+                renderTodayWatering();
+            } catch (err) {
+                console.error('Error cargando calendarios:', err);
+            }
+        }
+
+        // Funcion para mapear los datos del servidor
+        function mapServerToClient(item) {
+            return {
+                id: item.idCalendarioRiego ?? item.id,
+                plantName: item.nombreOrquidea ?? item.plantName,
+                zone: item.zona ?? item.zone,
+                day: item.diaRiego ?? item.day,
+                time: formatTime(item.horaRiego ?? item.time),
+                frequency: item.frecuenciaRiego ?? item.frequency,
+                notificationMethod: item.metodoNotificacion ?? item.notificationMethod,
+                active: item.estadoNotificacion ?? item.active
+            };
+        }
+
+       
 
         // Funcion eliminar Alerta
         function deleteSchedule(id) {
-            if (confirm('¿Está seguro de eliminar este calendario de riego?')) {
-                wateringSchedules = wateringSchedules.filter(s => s.id !== id);
-                showNotification('🗑️ Calendario eliminado', 'warning');
-                renderScheduleList();
-                renderTodayWatering();
+            if (!id) return;
+            if (!confirm('¿Está seguro de eliminar este calendario de riego?')) return;
+
+            const actionUrl = '@Url.Action("BorrarAlerta","CalendarioRiego")';
+
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            const tokenValue = tokenInput ? tokenInput.value : '';
+                        
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = actionUrl;
+            form.style.display = 'none';
+
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'id';
+            idInput.value = id;
+            form.appendChild(idInput);
+
+            if (tokenValue) {
+                const tokenField = document.createElement('input');
+                tokenField.type = 'hidden';
+                tokenField.name = '__RequestVerificationToken';
+                tokenField.value = tokenValue;
+                form.appendChild(tokenField);
             }
+
+            document.body.appendChild(form);
+            form.submit(); 
         }
 
-        // Funcion Activar o Pausar Alerta
+        
         function toggleSchedule(id) {
-            const schedule = wateringSchedules.find(s => s.id === id);
+            if (!id) return;
+            const schedule = wateringSchedules.find(s => String(s.id) === String(id));
             if (!schedule) return;
 
-            schedule.active = !schedule.active;
-            showNotification(
-                schedule.active ? '✅ Calendario activado' : '⏸️ Calendario pausado',
-                'success'
-            );
-            renderScheduleList();
+            const newState = !schedule.active;
+            const actionUrl = '@Url.Action("CambiarEstadoNotificacion","CalendarioRiego")';
+                       
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            const tokenValue = tokenInput ? tokenInput.value : '';
+                        
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = actionUrl;
+            form.style.display = 'none';
+
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'IdCalendarioRiego';
+            idInput.value = id;
+            form.appendChild(idInput);
+
+            const stateInput = document.createElement('input');
+            stateInput.type = 'hidden';
+            stateInput.name = 'EstadoNotificacion';
+            stateInput.value = newState ? 'true' : 'false';
+            form.appendChild(stateInput);
+
+            if (tokenValue) {
+                const tokenField = document.createElement('input');
+                tokenField.type = 'hidden';
+                tokenField.name = '__RequestVerificationToken';
+                tokenField.value = tokenValue;
+                form.appendChild(tokenField);
+            }
+
+            document.body.appendChild(form);
+            form.submit(); 
         }
 
         // Funcion Obtener iconos
@@ -246,7 +298,7 @@
         function renderScheduleList() {
             const container = document.getElementById('scheduleList');
 
-            if (wateringSchedules.length === 0) {
+            if (!wateringSchedules || wateringSchedules.length === 0) {
                 container.innerHTML = '<p style="text-align:center;color:#666;">No hay calendarios programados</p>';
                 return;
             }
@@ -284,7 +336,7 @@
         function renderTodayWatering() {
             let today = new Date().getDay();
             if (today === 0) today = 7;
-            const todaySchedules = wateringSchedules.filter(s => s.day === today && s.active);
+            const todaySchedules = (wateringSchedules || []).filter(s => s.day === today && s.active);
             const container = document.getElementById('todayWatering');
 
             if (todaySchedules.length === 0) {
@@ -332,23 +384,26 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().getDay();
-            document.getElementById('wateringDay').value = today;
+            
+            loadSchedulesFromServer();
 
-            renderScheduleList();
-            renderTodayWatering();
+            
+            const today = new Date().getDay();
+            const d = document.getElementById('wateringDay');
+            if (d) d.value = today;
             showNotification('📅 Sistema de calendario activo - Monitoreando riegos programados', 'success');
         });
-        // ⬇️⬇️⬇️ SCRIPT DEL LOADER ⬇️⬇️⬇️
-               window.addEventListener("load", () => {
-                   const loader = document.getElementById("loader");
-                   loader.classList.add("fade-out");
 
-                   setTimeout(() => {
-                       loader.style.display = "none";
-                   }, 500);
-               });
-               // ⬆️⬆️⬆️ FIN SCRIPT LOADER ⬆️⬆️⬆️
+        // ⬇️⬇️⬇️ SCRIPT DEL LOADER ⬇️⬇️⬇️
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("loader");
+            loader.classList.add("fade-out");
+
+            setTimeout(() => {
+                loader.style.display = "none";
+            }, 500);
+        });
+        // ⬆️⬆️⬆️ FIN SCRIPT LOADER ⬆️⬆️⬆️
 
     </script>
 

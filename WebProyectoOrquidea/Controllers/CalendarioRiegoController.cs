@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
+using System.Collections.Generic;
 
 namespace WebProyectoOrquidea.Controllers
 {
@@ -128,28 +129,81 @@ namespace WebProyectoOrquidea.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveWateringSchedule(CalendarioRiego model)
         {
+            //Json En caso de modelo nulo
+            if (model is null)
+                return Json(new { success = false, message = "Datos vacíos" });
+
+            // Json En caso de errores
+            if (!ModelState.IsValid)
+                return Json(new { success = false, message = "Modelo inválido", errors = ModelState });
+
+            // Ajustes por defecto
+            if (model.EstadoNotificacion == false)
+                model.EstadoNotificacion = true;
+
+            // Llamada al método del modelo que inserta en BD
+            var repo = new CalendarioRiego();
+            var newId = await repo.AgregarCalendario(model);
+
+            // Si el guardado fue exitoso, redirigimos a la vista Calendar para recargar la página.
+            return RedirectToAction(nameof(Calendar));
+        }
+
+        // GET: Obtener calendarios en JSON para consumo por JS
+        [HttpGet]
+        public async Task<IActionResult> MostrarCalendario()
+        {
             try
             {
-                if (model is null)
-                    return Json(new { success = false, message = "Datos vacíos" });
-
-                if (!ModelState.IsValid)
-                    return Json(new { success = false, message = "Modelo inválido", errors = ModelState });
-                                
-                if (model.EstadoNotificacion == 0)
-                    model.EstadoNotificacion = 1; 
-
-                
-                var newId = await model.AgregarCalendario(model);
-
-                return Json(new { success = true, message = "Calendario guardado exitosamente", id = newId });
+                var repo = new CalendarioRiego();
+                var list = await repo.GetCalendario();
+                // Devuelve JSON con la lista para que el cliente la procese
+                return Json(list);
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = ex.Message, data = new List<CalendarioRiego>() });
             }
         }
 
+        // POST: Elimiar Alerta de Riego
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> BorrarAlerta(int id, IFormCollection collection)
+        {
+            // Llamada al método del modelo que inserta en BD
+            var repo = new CalendarioRiego();
+            await repo.EliminarCalendario(id);
+
+            // Si el guardado fue exitoso, redirigimos a la vista Calendar para recargar la página.
+            return RedirectToAction(nameof(Calendar));
+        }
+
+        // POST: Modificar Estado de notificacion de la Alerta de Riego
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarEstadoNotificacion(int IdCalendarioRiego, bool EstadoNotificacion)
+        {
+            if (IdCalendarioRiego <= 0)
+                return RedirectToAction(nameof(Calendar));
+
+            try
+            {
+                var repo = new CalendarioRiego();
+                await repo.ModificarCalendario(new CalendarioRiego
+                {
+                    IdCalendarioRiego = IdCalendarioRiego,
+                    EstadoNotificacion = EstadoNotificacion
+                });
+
+                return RedirectToAction(nameof(Calendar));
+            }
+            catch (Exception)
+            {
+                // opcional: registrar el error
+                return RedirectToAction(nameof(Calendar));
+            }
+        }
 
     }
 }

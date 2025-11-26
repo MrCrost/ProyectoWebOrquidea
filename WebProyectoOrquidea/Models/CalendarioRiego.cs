@@ -1,5 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
-using Reloj_Control.ConexionDB;
+using WebProyectoOrquidea.ConexionDB;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 namespace WebProyectoOrquidea.Models
 {
     public class CalendarioRiego
-    {
-        public int IdOrquidea { get; set; }
+    {     
+        public int IdCalendarioRiego { get; set; }
         public string NombreOrquidea { get; set; }
         public string Zona { get; set; }
         public int DiaRiego { get; set; }
         public TimeSpan HoraRiego { get; set; }
-        public int Frecuencia { get; set; }
+        public int FrecuenciaRiego { get; set; }
         public string MetodoNotificacion { get; set; }
-        public int EstadoNotificacion { get; set; }
+        public bool EstadoNotificacion { get; set; }
 
         // LISTAR
         public async Task<List<CalendarioRiego>> GetCalendario()
@@ -24,24 +24,24 @@ namespace WebProyectoOrquidea.Models
             using var cn = DB.GetConnection();
 
             const string sql = @"
-                SELECT IdOrquidea, NombreOrquidea, Zona, DiaRiego, HoraRiego, Frecuencia, MetodoNotificacion, EstadoNotificacion
+                SELECT IdCalendarioRiego, NombreOrquidea, Zona, DiaRiego, HoraRiego, FrecuenciaRiego, MetodoNotificacion, EstadoNotificacion
                 FROM CalendarioRiego
-                ORDER BY IdOrquidea;";
+                ORDER BY IdCalendarioRiego;";
             using var cmd = new MySqlCommand(sql, cn);
 
             using var rd = (MySqlDataReader)await cmd.ExecuteReaderAsync();
             while (await rd.ReadAsync())
             {
                 list.Add(new CalendarioRiego
-                {
-                    IdOrquidea = rd.GetInt32("IdOrquidea"),
+                {       
+                    IdCalendarioRiego = rd.GetInt32("IdCalendarioRiego"),
                     NombreOrquidea = rd.GetString("NombreOrquidea"),
                     Zona = rd.GetString("Zona"),
                     DiaRiego = rd.GetInt32("DiaRiego"),
                     HoraRiego = rd.GetTimeSpan("HoraRiego"),
-                    Frecuencia = rd.GetInt32("Frecuencia"),
+                    FrecuenciaRiego = rd.GetInt32("FrecuenciaRiego"),
                     MetodoNotificacion = rd.GetString("MetodoNotificacion"),
-                    EstadoNotificacion = rd.GetInt32("EstadoNotificacion")
+                    EstadoNotificacion = rd.GetBoolean("EstadoNotificacion")
                 });
             }
             return list;
@@ -54,7 +54,7 @@ namespace WebProyectoOrquidea.Models
 
             const string sql = @"
                 INSERT INTO CalendarioRiego
-                (NombreOrquidea, Zona, DiaRiego, HoraRiego, Frecuencia, MetodoNotificacion, EstadoNotificacion)
+                (NombreOrquidea, Zona, DiaRiego, HoraRiego, FrecuenciaRiego, MetodoNotificacion, EstadoNotificacion)
                 VALUES (@n,@z,@d,@h,@f,@m,@e);
                 SELECT LAST_INSERT_ID();";
             using var cmd = new MySqlCommand(sql, cn);
@@ -62,7 +62,7 @@ namespace WebProyectoOrquidea.Models
             cmd.Parameters.AddWithValue("@z", c.Zona);
             cmd.Parameters.AddWithValue("@d", c.DiaRiego);
             cmd.Parameters.AddWithValue("@h", c.HoraRiego);
-            cmd.Parameters.AddWithValue("@f", c.Frecuencia);
+            cmd.Parameters.AddWithValue("@f", c.FrecuenciaRiego);
             cmd.Parameters.AddWithValue("@m", c.MetodoNotificacion);
             cmd.Parameters.AddWithValue("@e", c.EstadoNotificacion);
 
@@ -77,9 +77,9 @@ namespace WebProyectoOrquidea.Models
             const string sql = @"
                 UPDATE CalendarioRiego
                 SET EstadoNotificacion = @e
-                WHERE IdOrquidea = @id;";
+                WHERE IdCalendarioRiego = @id;";
             using var cmd = new MySqlCommand(sql, cn);
-            cmd.Parameters.AddWithValue("@id", c.IdOrquidea);
+            cmd.Parameters.AddWithValue("@id", c.IdCalendarioRiego);
             cmd.Parameters.AddWithValue("@e", c.EstadoNotificacion);
             await cmd.ExecuteNonQueryAsync();
         }
@@ -89,7 +89,7 @@ namespace WebProyectoOrquidea.Models
         {
             using var cn = DB.GetConnection();
 
-            const string sql = "DELETE FROM CalendarioRiego WHERE IdOrquidea = @id;"; 
+            const string sql = "DELETE FROM CalendarioRiego WHERE IdCalendarioRiego = @id;"; 
             using var cmd = new MySqlCommand(sql, cn);
             cmd.Parameters.AddWithValue("@id", id);
             await cmd.ExecuteNonQueryAsync();
