@@ -817,6 +817,10 @@ body {
     margin: auto;
     margin-top: 20px;
 }
+/* Barra del filtro */
+.search-row{
+
+}
 
 /* Inputs estilo OrchidCare */
 .input-orchid {
@@ -835,15 +839,16 @@ body {
 
 /* Botón de búsqueda */
 .btn-search {
-    margin-top: 22px;
-    padding: 10px 20px;
+    margin-top: 15px;
+    padding: 12px 30px;
     background: linear-gradient(135deg, #00b894, #55efc4);
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
-    transition: 0.2s;
+    transition: transform 0.2s;
+    
 }
 
     .btn-search:hover {
@@ -851,6 +856,9 @@ body {
         box-shadow: 0 6px 15px rgba(0, 184, 148, 0.3);
     }
 
+.btn-wrapper{
+
+}
 /* Tabla de lecturas */
 .table-section {
     background: white;

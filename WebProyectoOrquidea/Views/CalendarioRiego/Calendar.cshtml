@@ -190,7 +190,7 @@
             if (!confirm('¿Está seguro de eliminar este calendario de riego?')) return;
 
             const actionUrl = '@Url.Action("BorrarAlerta","CalendarioRiego")';
-
+                
             const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
             const tokenValue = tokenInput ? tokenInput.value : '';
                         
