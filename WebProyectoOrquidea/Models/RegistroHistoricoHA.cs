@@ -9,11 +9,10 @@ namespace WebProyectoOrquidea.Models
     public class RegistroHistoricoHA
     {
         public int IdRegistroHistoricoHA { get; set; }
-        public int IdSensor { get; set; }
-        public Sensor Sensor { get; set; }
+        public int IdValoresSensor { get; set; }
+        public ValoresSensor valoresSensor { get; set; }
         public DateTime Fecha { get; set; }
         public TimeSpan Hora { get; set; }
-        public bool Estado { get; set; }
 
         public async Task<int> AgregarRegistroHistoricoHA(RegistroHistoricoHA ha)
         {
@@ -21,14 +20,13 @@ namespace WebProyectoOrquidea.Models
 
             const string sql = @"
                 INSERT INTO RegistroHistoricoHA
-                (IdSensor, Fecha, Hora, Estado)
-                VALUES (@s,@f,@h,@e);
+                (IdValoresSensor, Fecha, Hora)
+                VALUES (@i,@f,@h,@e);
                 SELECT LAST_INSERT_ID();";
             using var cmd = new MySqlCommand(sql, cn);
-            cmd.Parameters.AddWithValue("@s", ha.IdSensor);
+            cmd.Parameters.AddWithValue("@i", ha.IdValoresSensor);
             cmd.Parameters.AddWithValue("@f", ha.Fecha);
             cmd.Parameters.AddWithValue("@h", ha.Hora);
-            cmd.Parameters.AddWithValue("@e", ha.Estado);
 
             var result = await cmd.ExecuteScalarAsync();
             return Convert.ToInt32(result);
@@ -40,12 +38,10 @@ namespace WebProyectoOrquidea.Models
             using var cn = DB.GetConnection();
 
             const string sql = @"
-                SELECT r.IdRegistroHistoricoHA, r.IdSensor, r.Fecha, r.Hora, r.Estado,
-                       s.IdSensor AS SensorId, s.IdValoresSensor, s.Nombre AS Sensor, s.Ubicacion AS Zona,
-                       v.IdValoresSensor AS ValoresSensorId, v.Humedad
-                FROM RegistroHistoricoHS r
-                LEFT JOIN Sensor s ON r.IdSensor = s.IdSensor
-                LEFT JOIN ValoresSensor v ON s.IdValoresSensor = v.IdValoresSensor
+                SELECT r.IdRegistroHistoricoHA, r.IdValoresSensor, r.Fecha, r.Hora, s.IdSensor as SensorId, s.Ubicacion, v.Humedad
+                FROM RegistroHistoricoHA r
+                LEFT JOIN ValoresSensor v ON r.IdValoresSensor = v.IdValoresSensor
+                LEFT JOIN Sensor s ON v.IdSensor = s.IdSensor
                 ORDER BY r.IdRegistroHistoricoHA;";
 
             using var cmd = new MySqlCommand(sql, cn);
@@ -55,20 +51,16 @@ namespace WebProyectoOrquidea.Models
                 var registro = new RegistroHistoricoHA
                 {
                     IdRegistroHistoricoHA = rd.GetInt32("IdRegistroHistoricoHA"),
-                    IdSensor = rd.GetInt32("IdSensor"),
+                    IdValoresSensor = rd.GetInt32("IdValoresSensor"),
                     Fecha = rd.GetDateTime("Fecha"),
                     Hora = rd.GetTimeSpan("Hora"),
-                    Estado = rd.GetBoolean("Estado"),
-                    Sensor = !rd.IsDBNull(rd.GetOrdinal("SensorId")) ? new Sensor
+                    valoresSensor = !rd.IsDBNull(rd.GetOrdinal("IdValoresSensor")) ? new ValoresSensor
                     {
                         IdSensor = rd.GetInt32("SensorId"),
-                        IdValoresSensor = rd.GetInt32("IdValoresSensor"),
-                        Nombre = rd.IsDBNull(rd.GetOrdinal("Sensor")) ? null : rd.GetString("Sensor"),
-                        Ubicacion = rd.IsDBNull(rd.GetOrdinal("Zona")) ? null : rd.GetString("Zona"),
-                        valoresSensor = !rd.IsDBNull(rd.GetOrdinal("SensorId")) ? new ValoresSensor
+                        Humedad = rd.IsDBNull(rd.GetOrdinal("Humedad")) ? (double?)null : rd.GetDouble("Humedad"),
+                        sensor = !rd.IsDBNull(rd.GetOrdinal("SensorId")) ? new Sensor
                         {
-                            IdValoresSensor = rd.GetInt32("ValoresSensorId"),
-                            Humedad = rd.IsDBNull(rd.GetOrdinal("Humedad")) ? null : rd.GetString("Humedad")
+                            Ubicacion = rd.IsDBNull(rd.GetOrdinal("Ubicacion")) ? null : rd.GetString("Ubicacion")
                         } : null
                     } : null
                 };

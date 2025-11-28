@@ -143,13 +143,13 @@ namespace WebProyectoOrquidea.Controllers
 
             // Llamada al método del modelo que inserta en BD
             var repo = new CalendarioRiego();
-            var newId = await repo.AgregarCalendario(model);
+            await repo.AgregarCalendario(model);
 
             // Si el guardado fue exitoso, redirigimos a la vista Calendar para recargar la página.
             return RedirectToAction(nameof(Calendar));
         }
 
-        // GET: Obtener calendarios en JSON para consumo por JS
+        // GET: Obtener calendarios en JSON para que lo use el JS
         [HttpGet]
         public async Task<IActionResult> MostrarCalendario()
         {
@@ -157,7 +157,7 @@ namespace WebProyectoOrquidea.Controllers
             {
                 var repo = new CalendarioRiego();
                 var list = await repo.GetCalendario();
-                // Devuelve JSON con la lista para que el cliente la procese
+                
                 return Json(list);
             }
             catch (Exception ex)

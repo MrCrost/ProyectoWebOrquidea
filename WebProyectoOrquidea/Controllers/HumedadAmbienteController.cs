@@ -1,5 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MySql.Data.MySqlClient;
+using System.Globalization;
+using System.Reflection.Metadata;
+using System.Security.Policy;
+using System.Xml.Linq;
+using WebProyectoOrquidea.ConexionDB;
+using WebProyectoOrquidea.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WebProyectoOrquidea.Controllers
 {
@@ -81,20 +89,95 @@ namespace WebProyectoOrquidea.Controllers
         }
 
 
-        // GET: Obtener historial de datos
+        // GET: Obtener Historial en JSON para que lo use el JS
         [HttpGet]
-        public IActionResult GetHistoricalData(DateTime startDate, DateTime endDate, string sensorType)
+        public async Task<IActionResult> MostrarHistorial()
         {
-            // AQUÍ SE CONECTARÍA CON LA BASE DE DATOS
-            // Consulta de ejemplo:
-            /*
-            var query = @"SELECT * FROM HistorialSensores 
-                         WHERE FechaRegistro BETWEEN @StartDate AND @EndDate 
-                         AND TipoSensor = @SensorType
-                         ORDER BY FechaRegistro DESC";
-            */
+            try
+            {
+                var repo = new RegistroHistoricoHA();
+                var list = await repo.GetRegistroHistoricoHA();
+                
+                return Json(list);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message, data = new List<RegistroHistoricoHA>() });
+            }
+        }
 
-            return Json(new { success = true, data = new List<object>() });
+        // POST: Agregar datos Sensor
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AgregarHistorial(RegistroHistoricoHA ha)
+        {
+            try
+            {
+                
+                // Llamada al método del modelo que inserta en BD
+                var historial = new RegistroHistoricoHA();
+                await historial.AgregarRegistroHistoricoHA(ha);
+
+                return Json(new { success = true, message = "Valores agregados" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
+        // POST: Agregar datos Sensor
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AgregarDatosSensor(int idSensor, double? humidity)
+        {
+            try
+            {
+                double? humidityResult = humidity / 10;
+                double? temperature = null;
+                // Llamada al método del modelo que inserta en BD
+                var rValoresSensor = new ValoresSensor();
+                await rValoresSensor.AgregarValoresSensor(idSensor, temperature, humidityResult);                
+
+                return Json(new { success = true, message = "Valores agregados"});
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetSensor()
+        {
+            try
+            {
+                var repo = new Sensor();
+                var list = await repo.GetSensor();
+
+                return Json(list);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message, data = new List<Sensor>() });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetValoresSensor()
+        {
+            try
+            {
+                var repo = new ValoresSensor();
+                var list = await repo.GetValoresSensor();
+
+                return Json(list);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message, data = new List<ValoresSensor>() });
+            }
         }
     }
 }

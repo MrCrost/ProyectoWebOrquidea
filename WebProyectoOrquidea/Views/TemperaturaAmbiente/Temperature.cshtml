@@ -13,6 +13,8 @@
 
 <body class="temperature-background">
 
+    @Html.AntiForgeryToken()
+
     <!--  LOADER - Opción 3: Flor girando  -->
     <div id="loader">
         <div class="loader-icon">
@@ -59,20 +61,14 @@
                     <div class="sensor-label">Invernadero Principal</div>
                     <div class="sensor-value" id="temp1">--</div>
                     <div class="sensor-status" id="tempStatus1">Conectando...</div>
-                    <small style="opacity:.8;margin-top:10px;display:block;">Zona A - B - C</small>
+                    <small style="opacity:.8;margin-top:10px;display:block;">Zona A - B - C - Plantines</small>
                 </div>
 
-                <div class="sensor-card temperature-card">
-                    <div class="sensor-label">Zona de Propagación</div>
-                    <div class="sensor-value" id="temp2">--</div>
-                    <div class="sensor-status" id="tempStatus2">Conectando...</div>
-                    <small style="opacity:.8;margin-top:10px;display:block;">Área de plantines</small>
-                </div>
 
                 <div class="sensor-card temperature-card">
                     <div class="sensor-label">Exterior (Referencia)</div>
-                    <div class="sensor-value" id="temp3">--</div>
-                    <div class="sensor-status" id="tempStatus3">Conectando...</div>
+                    <div class="sensor-value" id="temp2">--</div>
+                    <div class="sensor-status" id="tempStatus2">Conectando...</div>
                     <small style="opacity:.8;margin-top:10px;display:block;">Temperatura ambiente</small>
                 </div>
             </div>
@@ -121,47 +117,100 @@
 
     <!-- JS REAL-TIME -->
     <script>
-        const locations = ['Invernadero Principal', 'Zona de Propagación', 'Exterior'];
+        const locations = ['Invernadero Principal', 'Exterior'];
+        let temps=[];
+        let historialTA=[];
 
-        function getCurrentPeriod() {
-            const hour = new Date().getHours();
-            return (hour >= 6 && hour < 18) ? 'Día' : 'Noche';
-        }
+        // Envia un POST por sensor al controlador con antiforgery token
+        async function postAgregarDatosSensorEHistorial(idSensor, temperature, date, time, periodo, estado) {
+            try {
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : '';
 
-        function getOptimalRange() {
-            const p = getCurrentPeriod();
-            return p === 'Día' ? { min: 22, max: 24 } : { min: 18, max: 20 };
+                const res = await fetch('@Url.Action("AgregarDatosSensorEHistorialTA", "TemperaturaAmbiente")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
+                    },
+                    body: new URLSearchParams({
+                        '__RequestVerificationToken': token,
+                        'idSensor': idSensor,
+                        'temperature': temperature,
+                        'date' : date,
+                        'time' : time,
+                        'periodo' : periodo,
+                        'estado' : estado
+                    })
+                });
+
+                if (!res.ok) throw new Error('Respuesta no OK: ' + res.status);
+                const json = await res.json();
+                return json;
+            } catch (err) {
+                console.error('Error en postAgregarDatosSensor:', err);
+                return { success: false, message: err.message };
+            }
         }
 
         function updateTemperatureSensors() {
-            const period = getCurrentPeriod();
-            const optimal = getOptimalRange();
+            const now = new Date();
+            const date = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().split(' ')[0]; // HH:MM:SS -> compatible con TimeSpan
+            const hour = now.getHours();
+            const period = (hour >= 6 && hour < 18) ? 'Día' : 'Noche';
+            const optimal = period === 'Día' ? { min: 22, max: 24 } : { min: 18, max: 20 };
             const alerts = [];
 
-            for (let i = 1; i <= 3; i++) {
-                let temp = (i === 3)
-                    ? (Math.random() * 15 + 15).toFixed(1)
-                    : (Math.random() * 8 + 17).toFixed(1);
 
-                document.getElementById(`temp${i}`).textContent = temp + '°C';
+            temps[1]=Math.random() * 8 + 15;
+            temps[2]=Math.random() * 8 + 15;
+            temps[3]=Math.random() * 8 + 15;
+            temps[4]=Math.random() * 8 + 15;
+            temps[5]=Math.random() * 15 + 15;
 
-                let status;
-                if (i === 3) {
-                    status = "📊 Referencia";
-                } else if (temp >= optimal.min && temp <= optimal.max) {
-                    status = `✅ Óptimo para ${period}`;
-                } else if (temp < optimal.min) {
-                    status = `❄️ Frío (${period})`;
-                    alerts.push(`${locations[i - 1]}: Baja (${temp}°C)`);
-                } else {
-                    status = `🔥 Caliente (${period})`;
-                    alerts.push(`${locations[i - 1]}: Alta (${temp}°C)`);
-                }
-
-                document.getElementById(`tempStatus${i}`).textContent = status;
-
-                addToTempHistory(i, temp, period, status);
+            let statusT;
+            let status
+            let suma = 0;
+            for (let i = 1; i <= 4; i++) {
+                
+                suma += temps[i];
             }
+            let promedio = parseFloat((suma / 4).toFixed(1));
+            
+            document.getElementById(`temp1`).textContent = promedio + '°C';
+
+            if (promedio >= optimal.min && promedio <= optimal.max) {
+                statusT = `✅ Óptimo para ${period}`;
+                status = "Optimo";
+            } else if (promedio < optimal.min) {
+                statusT = `❄️ Frío (${period})`;
+                status = "Frio";
+                alerts.push(`${locations[1]}: Baja (${promedio}°C)`);
+            } else {
+                statusT = `🔥 Caliente (${period})`;
+                status = "Caliente";
+                alerts.push(`${locations[1]}: Alta (${promedio}°C)`);
+            }
+            document.getElementById(`tempStatus${1}`).textContent = statusT;
+
+            document.getElementById(`temp${2}`).textContent = temps[5].toFixed(1) + '°C';
+            document.getElementById(`tempStatus${2}`).textContent = "📊 Referencia";
+
+            // enviar todas las peticiones y esperar a que terminen antes de pedir historial
+            const promises = [];
+            for(let i=1; i <=5 ; i++){
+                const estadoToSend = (i === 5) ? "Referencia" : status;
+                promises.push(postAgregarDatosSensorEHistorial(i, temps[i].toFixed(1), date, timeStr, period, estadoToSend));
+            }
+
+            Promise.all(promises)
+                .then(() => getHistorialTA())
+                .catch(err => {
+                    console.error('Error en envíos de sensores:', err);
+                    // igualmente intentar actualizar historial
+                    getHistorialTA();
+                });
 
             displayAlerts(alerts);
         }
@@ -182,22 +231,58 @@
             }
         }
 
-        function addToTempHistory(sensorId, temp, period, status) {
-            const table = document.getElementById("tempHistoryTable");
-            const timeStr = new Date().toLocaleTimeString();
+        // Recupera historial desde MostrarHistorial y lo mapea
+        async function getHistorialTA() {
+            try {
+                const res = await fetch('@Url.Action("MostrarHistorial", "TemperaturaAmbiente")', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!res.ok) throw new Error('Respuesta no OK: ' + res.status);
+                const data = await res.json();
 
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td style="padding:12px;">${timeStr}</td>
-                <td style="padding:12px;">${locations[sensorId - 1]}</td>
-                <td style="padding:12px;">${temp}°C</td>
-                <td style="padding:12px;">${period}</td>
-                <td style="padding:12px;">${status}</td>`;
+                console.debug('[addHistory] respuesta cruda:', data);
 
-            table.prepend(row);
-            if (table.children.length > 12) table.removeChild(table.lastChild);
+                let raw = [];
+                if (Array.isArray(data)) raw = data;
+                else if (data && Array.isArray(data.data)) raw = data.data;
+                else if (data && Array.isArray(data.list)) raw = data.list;
+                else raw = [];
+
+
+                if (raw.length > 0) console.debug('[addHistory] primer item raw:', raw[0]);
+
+                historialTA = raw.map(mapServerToClient).reverse().slice(0, 50);
+                console.log(raw);
+                
+            } catch (err) {
+                console.error('Error cargando historialTA:', err);
+                historialTA = [];
+            }
+
+            renderHistoryList();
         }
 
+        function renderHistoryList() {
+            const container = document.getElementById('tempHistoryTable');
+            if (!Array.isArray(historialTA) || historialTA.length === 0) {
+                container.innerHTML = '<tr><td colspan="6" class="history-empty">No hay Historial disponible</td></tr>';
+                return;
+            }
+
+            container.innerHTML = historialTA.map(h => `
+                <tr>
+                    <td style="padding:12px;">${h.time}</td>
+                    <td style="padding:12px;">${h.sensorId === 5 ? locations[1] : locations[0]}</td>
+                    <td style="padding:12px;"><strong>${h.temperatura} ºC</strong></td>
+                    <td style="padding:12px;">${h.period}</td>
+                    <td style="padding:12px;">${h.status}</td>
+                </tr>
+            `).join('');
+            console.debug(`renderHistoryList: renderizados ${historialTA.length} registros`);
+        }
+
+        // Adaptarlo Cuando haya tiempo
         function createTempChart() {
             const chart = document.getElementById("tempChart");
             let html = "";
@@ -213,6 +298,84 @@
                 </div>`;
             }
             chart.innerHTML = html;
+        }
+
+        function mapServerToClient(item) {
+            try {
+                const idRegistro = item.IdRegistroHistoricoTA ?? item.idRegistroHistoricoTA ?? item.IdRegistro ?? item.id ?? null;
+                const idValores = item.IdValoresSensor ?? item.idValoresSensor ?? null;
+
+                const vs = item.valoresSensor ?? item.ValoresSensor ?? item.Valores ?? null;
+
+                const tempRaw = item.temperatura ?? item.temperature ?? (vs ? (vs.Temperatura ?? vs.temperatura) : null);
+                const temperature = (tempRaw === null || tempRaw === undefined) ? null : parseFloat(tempRaw);
+
+
+                const sensorId = (vs && (vs.IdSensor ?? vs.id ?? vs.idSensor)) ?? item.IdSensor ?? item.idSensor ?? item.SensorId ?? null;
+
+                let date = item.Fecha ?? item.fecha ?? item.date ?? item.Date ?? null;
+                let time = item.Hora ?? item.hora ?? item.time ?? item.Time ?? null;
+
+                if (date && typeof date === 'string' && !time) {
+                    const d = new Date(date);
+                    if (!isNaN(d)) {
+                        date = d.toLocaleDateString();
+                        time = d.toLocaleTimeString();
+                    }
+                }
+
+                const now = new Date();
+                date = date ?? now.toLocaleDateString();
+                time = time ?? now.toLocaleTimeString();
+
+                let period = item.Periodo ?? item.periodo ?? item.Period ?? null;
+                if (!period) {
+                    let hour = now.getHours();
+                    if (typeof time === 'string') {
+                        const parts = time.split(':');
+                        const h = parseInt(parts[0], 10);
+                        if (!isNaN(h)) hour = h;
+                    }
+                    period = (hour >= 6 && hour < 18) ? 'Día' : 'Noche';
+                }
+
+                let status = item.status ?? item.estado ?? item.Estado ?? null;
+                
+                if (!status) {
+                    
+                    if (temperature !== null && !isNaN(temperature)) {
+                        const bounds = (period === 'Día') ? { min: 22, max: 24 } : { min: 18, max: 20 };
+                        if (temperature >= bounds.min && temperature <= bounds.max) status = `✅ Óptimo`;
+                        else if (temperature < bounds.min) status = `❄️ Frío (${period})`;
+                        else status = `🔥 Caliente (${period})`;
+                    } else {
+                        status = '⏳ Sin datos';
+                    }
+                }
+
+                return {
+                    idRegistro,
+                    idValores,
+                    sensorId: sensorId ?? '--',
+                    temperatura: (temperature !== null && !isNaN(temperature)) ? temperature.toFixed(1) : '--',
+                    date,
+                    time,
+                    period,
+                    status
+                };
+            } catch (err) {
+                console.error('mapServerToClient error:', err, item);
+                return {
+                    idRegistro: null,
+                    idValores: null,
+                    sensorId: '--',
+                    temperatura: '--',
+                    date: new Date().toLocaleDateString(),
+                    time: new Date().toLocaleTimeString(),
+                    period: 'N/D',
+                    status: '⏳ Sin datos'
+                };
+            }
         }
 
         setInterval(updateTemperatureSensors, 5000);

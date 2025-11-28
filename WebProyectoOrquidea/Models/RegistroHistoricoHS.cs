@@ -6,8 +6,8 @@ namespace WebProyectoOrquidea.Models
     public class RegistroHistoricoHS
     {
         public int IdRegistroHistoricoHS { get; set; }
-        public int IdSensor { get; set; }
-        public Sensor Sensor { get; set; }
+        public int IdValoresSensor { get; set; }
+        public ValoresSensor valoresSensor { get; set; }
         public DateTime Fecha { get; set; }
         public TimeSpan Hora { get; set; }
         public string NombreOrquidea { get; set; }
@@ -19,11 +19,11 @@ namespace WebProyectoOrquidea.Models
 
             const string sql = @"
                 INSERT INTO RegistroHistoricoHS
-                (IdSensor, Fecha, Hora, NombreOrquidea, Estado)
-                VALUES (@s,@f,@h,@n,@e);
+                (IdValoresSensor, Fecha, Hora, NombreOrquidea, Estado)
+                VALUES (@i,@f,@h,@n,@e);
                 SELECT LAST_INSERT_ID();";
             using var cmd = new MySqlCommand(sql, cn);
-            cmd.Parameters.AddWithValue("@s", hs.IdSensor);
+            cmd.Parameters.AddWithValue("@i", hs.IdValoresSensor);
             cmd.Parameters.AddWithValue("@f", hs.Fecha);
             cmd.Parameters.AddWithValue("@h", hs.Hora);
             cmd.Parameters.AddWithValue("@n", hs.NombreOrquidea);
@@ -54,21 +54,21 @@ namespace WebProyectoOrquidea.Models
                 var registro = new RegistroHistoricoHS
                 {
                     IdRegistroHistoricoHS = rd.GetInt32("IdRegistroHistoricoHS"),
-                    IdSensor = rd.GetInt32("IdSensor"),
+                    IdValoresSensor = rd.GetInt32("IdValoresSensor"),
                     Fecha = rd.GetDateTime("Fecha"),
                     Hora = rd.GetTimeSpan("Hora"),
                     NombreOrquidea = rd.GetString("NombreOrquidea"),
                     Estado = rd.GetBoolean("Estado"),
-                    Sensor = !rd.IsDBNull(rd.GetOrdinal("SensorId")) ? new Sensor
+                    valoresSensor = !rd.IsDBNull(rd.GetOrdinal("IdValoresSensor")) ? new ValoresSensor
                     {
-                        IdSensor = rd.GetInt32("SensorId"),
                         IdValoresSensor = rd.GetInt32("IdValoresSensor"),
-                        Nombre = rd.IsDBNull(rd.GetOrdinal("Sensor")) ? null : rd.GetString("Sensor"),
-                        Ubicacion = rd.IsDBNull(rd.GetOrdinal("Zona")) ? null : rd.GetString("Zona"),
-                        valoresSensor = !rd.IsDBNull(rd.GetOrdinal("SensorId")) ? new ValoresSensor
+                        IdSensor = rd.GetInt32("SensorId"),
+                        Temperatura = rd.IsDBNull(rd.GetOrdinal("Temperatura")) ? (int?)null : rd.GetDouble("Temperatura"),
+                        Humedad = rd.IsDBNull(rd.GetOrdinal("Humedad")) ? (double?)null : rd.GetDouble("Humedad"),
+                        sensor = !rd.IsDBNull(rd.GetOrdinal("SensorId")) ? new Sensor
                         {
-                            IdValoresSensor = rd.GetInt32("ValoresSensorId"),
-                            Humedad = rd.IsDBNull(rd.GetOrdinal("Humedad")) ? null : rd.GetString("Humedad")
+                            IdSensor = rd.GetInt32("ValoresSensorId"),
+                            Ubicacion = rd.IsDBNull(rd.GetOrdinal("Ubicacion")) ? null : rd.GetString("Ubicacion")
                         } : null
                     } : null
                 };

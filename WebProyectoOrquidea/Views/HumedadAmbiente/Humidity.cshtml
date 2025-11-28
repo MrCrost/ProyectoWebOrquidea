@@ -96,13 +96,47 @@
             </div>
         </div>
 
+        @Html.AntiForgeryToken()
 
         <!-- Script -->
         <script>
             const OPTIMAL_MIN = 40;
             const OPTIMAL_MAX = 70;
+            // array que contendrá el Historial traído del servidor
+            let historialHA = [];
 
-            function updateHumiditySensors() {
+            // Envia un POST por sensor al controlador con antiforgery token
+            async function postAgregarDatosSensor(idSensor, humidity) {
+                try {
+                    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                    const token = tokenInput ? tokenInput.value : '';
+
+                    const res = await fetch('@Url.Action("AgregarDatosSensor", "HumedadAmbiente")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Accept': 'application/json'
+                        },
+                        body: new URLSearchParams({
+                            '__RequestVerificationToken': token,
+                            'idSensor': idSensor,
+                            'humidity': humidity
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Respuesta no OK: ' + res.status);
+                    const json = await res.json();
+                    return json;
+                } catch (err) {
+                    console.error('Error en postAgregarDatosSensor:', err);
+                    return { success: false, message: err.message };
+                }
+            }
+
+            // Obtiene metadata (GetSensor) y últimas lecturas (MostrarHistorial),
+            // luego recorre 1..4 buscando por id para actualizar humidity y zona.
+            async function updateHumiditySensors() {
+
                 for (let i = 1; i <= 4; i++) {
                     let zone;
                     const humidity = (Math.random() * 40 + 40).toFixed(1);
@@ -136,27 +170,135 @@
                             break;
                     }
 
-                    addToHistory(zone,i, humidity, status);
+                    postAgregarDatosSensor(i, humidity);
+                    await addHistory();
                 }
             }
 
-            function addToHistory(zone ,sensorId, humidity, status) {
-                const table = document.getElementById('historyTable');
-                const date = new Date().getDate().toString();
-                const time = new Date().toLocaleTimeString();
+            // Recupera historial desde MostrarHistorial y lo mapea
+            async function addHistory() {
+                try {
+                    const res = await fetch('@Url.Action("MostrarHistorial", "HumedadAmbiente")', {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!res.ok) throw new Error('Respuesta no OK: ' + res.status);
+                    const data = await res.json();
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="padding: 12px;">${date}</td>
-                    <td style="padding: 12px;">${time}</td>
-                    <td style="padding: 12px;">${zone}</td>
-                    <td style="padding: 12px;">Sensor ${sensorId}</td>
-                    <td style="padding: 12px;"><strong>${humidity}%</strong></td>
-                    <td style="padding: 12px;">${status}</td>
-                `;
+                    console.debug('[addHistory] respuesta cruda:', data);
 
-                table.insertBefore(row, table.firstChild);
-                if (table.children.length > 10) table.removeChild(table.lastChild);
+                    let raw = [];
+                    if (Array.isArray(data)) raw = data;
+                    else if (data && Array.isArray(data.data)) raw = data.data;
+                    else if (data && Array.isArray(data.list)) raw = data.list; // por si devuelve otro nombre
+                    else raw = [];
+
+                    // log del primer elemento para inspección rápida
+                    if (raw.length > 0) console.debug('[addHistory] primer item raw:', raw[0]);
+
+                    historialHA = raw.map(mapServerToClient).reverse().slice(0, 50);
+                } catch (err) {
+                    console.error('Error cargando historialHA:', err);
+                    historialHA = [];
+                }
+
+                renderHistoryList();
+            }
+
+            // Normaliza distintos formatos que puede devolver el servidor
+            function mapServerToClient(item) {
+                try {
+                    // Posibles ubicaciones de ids / humedad / zona según tu modelo
+                    const idRegistro = item.IdRegistroHistoricoHA ?? item.idRegistroHistoricoHA ?? item.id ?? null;
+                    const idValores = item.IdValoresSensor ?? item.idValoresSensor ?? item.IdValores ?? item.IdValores ?? null;
+
+                    // valoresSensor anidado (según RegistroHistoricoHA.GetRegistroHistoricoHA)
+                    const vs = item.valoresSensor ?? item.ValoresSensor ?? null;
+
+                    // Humedad puede venir directo (Humedad) o en valoresSensor.Humedad
+                    const humidityRaw = item.Humedad ?? item.humedad ?? (vs ? (vs.Humedad ?? vs.humedad) : null);
+                    const humidity = (humidityRaw === null || humidityRaw === undefined) ? null : parseFloat(humidityRaw);
+
+                    // Sensor id puede estar en vs.IdSensor o en item.IdSensor
+                    const sensorId = (vs && (vs.IdSensor ?? vs.id ?? vs.idSensor)) ?? item.IdSensor ?? item.idSensor ?? item.sensor?.IdSensor ?? item.sensor?.id ?? null;
+
+                    // Ubicación: sensor anidado o columna Ubicacion
+                    const zone = (vs && vs.sensor && (vs.sensor.Ubicacion ?? vs.sensor.ubicacion)) ?? item.Ubicacion ?? item.ubicacion ?? item.sensor?.Ubicacion ?? 'Zona desconocida';
+
+                    // Fecha / Hora: puede venir en propiedades Fecha / Hora o en un timestamp
+                    let date = item.date ?? item.Date ?? item.Fecha ?? item.fecha ?? null;
+                    let time = item.time ?? item.Time ?? item.Hora ?? item.hora ?? null;
+
+                    if (date && typeof date === 'string' && !time) {
+                        // si Fecha viene en ISO, separa fecha/hora
+                        const d = new Date(date);
+                        if (!isNaN(d)) {
+                            date = d.toLocaleDateString();
+                            time = d.toLocaleTimeString();
+                        }
+                    }
+
+                    // si no hay fecha/hora genera ahora
+                    const now = new Date();
+                    date = date ?? now.toLocaleDateString();
+                    time = time ?? now.toLocaleTimeString();
+
+                    // Estado calculado
+                    let status = item.status ?? item.Estado ?? null;
+                    if (!status) {
+                        if (humidity !== null && !isNaN(humidity)) {
+                            if (humidity >= OPTIMAL_MIN && humidity <= OPTIMAL_MAX) status = '✅ Óptimo';
+                            else if (humidity < OPTIMAL_MIN) status = '⚠️ Seco - Requiere Riego';
+                            else status = '⚠️ Muy Húmedo';
+                        } else {
+                            status = '⏳ Sin datos';
+                        }
+                    }
+
+                    return {
+                        idRegistro,
+                        idValores,
+                        sensorId: sensorId ?? '--',
+                        humedad: (humidity !== null && !isNaN(humidity)) ? humidity.toFixed(1) : '--',
+                        zone,
+                        date,
+                        time,
+                        status
+                    };
+                } catch (err) {
+                    console.error('mapServerToClient error:', err, item);
+                    return {
+                        idRegistro: null,
+                        idValores: null,
+                        sensorId: '--',
+                        humedad: '--',
+                        zone: 'Zona desconocida',
+                        date: new Date().toLocaleDateString(),
+                        time: new Date().toLocaleTimeString(),
+                        status: '⏳ Sin datos'
+                    };
+                }
+            }
+
+            
+            function renderHistoryList() {
+                const container = document.getElementById('historyTable');
+                if (!Array.isArray(historialHA) || historialHA.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="history-empty">No hay Historial disponible</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = historialHA.map(h => `
+                    <tr>
+                        <td style="padding:12px;">${h.date}</td>
+                        <td style="padding:12px;">${h.time}</td>
+                        <td style="padding:12px;">${h.zone}</td>
+                        <td style="padding:12px;">Sensor ${h.sensorId}</td>
+                        <td style="padding:12px;"><strong>${h.humedad}${h.humedad !== '--' ? '%' : ''}</strong></td>
+                        <td style="padding:12px;">${h.status}</td>
+                    </tr>
+                `).join('');
+                console.debug(`renderHistoryList: renderizados ${historialHA.length} registros`);
             }
 
             setInterval(updateHumiditySensors, 5000);
