@@ -67,6 +67,40 @@ namespace WebProyectoOrquidea.Models
             return Convert.ToInt32(resultObj);
         }
 
+        // Agregar valores e insertar registro en AgregarValoresEHistorialHS
+        public async Task<int> AgregarValoresEHistorialHS(int idSensor, double? temperatura, double? humedad, DateTime date, TimeSpan time, string estado)
+        {
+
+            using var cn = DB.GetConnection();
+
+            const string sql1 = @"
+                INSERT INTO ValoresSensor
+                (IdSensor, Temperatura, Humedad)
+                VALUES (@i,@t,@h);
+                SELECT LAST_INSERT_ID();";
+            using var cmd = new MySqlCommand(sql1, cn);
+            cmd.Parameters.AddWithValue("@i", idSensor);
+            cmd.Parameters.AddWithValue("@t", temperatura.HasValue ? (object)temperatura.Value : DBNull.Value);
+            cmd.Parameters.AddWithValue("@h", humedad.HasValue ? (object)humedad.Value : DBNull.Value);
+
+            var idValoresObj = await cmd.ExecuteScalarAsync();
+            var idValores = Convert.ToInt32(idValoresObj);
+
+            const string sql2 = @"
+                INSERT INTO RegistroHistoricoHS
+                (IdValoresSensor, Fecha, Hora, Estado)
+                VALUES (@i,@f,@h,@e);
+                SELECT LAST_INSERT_ID();";
+            using var cmd2 = new MySqlCommand(sql2, cn);
+            cmd2.Parameters.AddWithValue("@i", idValores);
+            cmd2.Parameters.AddWithValue("@f", date);
+            cmd2.Parameters.AddWithValue("@h", time);
+            cmd2.Parameters.AddWithValue("@e", estado);
+
+            var resultObj = await cmd2.ExecuteScalarAsync();
+            return Convert.ToInt32(resultObj);
+        }
+
         public async Task<List<ValoresSensor>> GetValoresSensor()
         {
             var list = new List<ValoresSensor>();

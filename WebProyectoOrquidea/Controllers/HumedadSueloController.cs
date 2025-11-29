@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using WebProyectoOrquidea.Models;
 
 namespace WebProyectoOrquidea.Controllers
 {
@@ -80,21 +82,73 @@ namespace WebProyectoOrquidea.Controllers
             }
         }
 
-
-        // GET: Obtener historial de datos
+        // GET: Filtro de historial 
         [HttpGet]
-        public IActionResult GetHistoricalData(DateTime startDate, DateTime endDate, string sensorType)
+        public async Task<IActionResult> Filtro(int? idSensor, string zona, DateTime fechaInicial, DateTime fechaFinal, TimeSpan horaInicial, TimeSpan horaFinal)
         {
-            // AQUÍ SE CONECTARÍA CON LA BASE DE DATOS
-            // Consulta de ejemplo:
-            /*
-            var query = @"SELECT * FROM HistorialSensores 
-                         WHERE FechaRegistro BETWEEN @StartDate AND @EndDate 
-                         AND TipoSensor = @SensorType
-                         ORDER BY FechaRegistro DESC";
-            */
+            try
+            {
+                var list = new List<RegistroHistoricoHS>();
+                var repo = new RegistroHistoricoHS();
 
-            return Json(new { success = true, data = new List<object>() });
+                if (idSensor.HasValue)
+                {
+                    list = await repo.GetFiltroIdSensor(idSensor.Value, fechaInicial, fechaFinal, horaInicial, horaFinal);
+                }
+                else if (!string.IsNullOrWhiteSpace(zona))
+                {
+                    list = await repo.GetFiltroZona(zona, fechaInicial, fechaFinal, horaInicial, horaFinal);
+                }
+                else
+                {
+                    list = await repo.GetFiltroFechaHora(fechaInicial, fechaFinal, horaInicial, horaFinal);
+                }
+
+
+
+                return Json(list);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message, data = new List<RegistroHistoricoHS>() });
+            }
+        }
+
+        // POST: Agregar datos Sensor
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AgregarDatosSensorEHistorialHS(int idSensor, double humedad, DateTime date, TimeSpan time, string estado)
+        {
+            try
+            {
+                double? temperature = null;
+
+                var rValoresSensor = new ValoresSensor();
+                await rValoresSensor.AgregarValoresEHistorialHS(idSensor, temperature , humedad / 10, date, time, estado);
+
+                return Json(new { success = true, message = "Valores agregados" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Obtener Historial en JSON para que lo use el JS
+        [HttpGet]
+        public async Task<IActionResult> MostrarHistorial()
+        {
+            try
+            {
+                var repo = new RegistroHistoricoHS();
+                var list = await repo.GetRegistroHistoricoHS();
+
+                return Json(list);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message, data = new List<RegistroHistoricoHS>() });
+            }
         }
     }
 }

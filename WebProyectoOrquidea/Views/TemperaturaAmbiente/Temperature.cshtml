@@ -74,14 +74,10 @@
             </div>
 
             <div id="temperatureAlerts" style="margin-top:20px;"></div>
-
-            <div class="db-placeholder" style="margin-top:20px;">
-                <h3>🗄️ Almacenamiento de Datos de Temperatura</h3>
-                <p>Los datos de temperatura se guardarán en la base de datos según la frecuencia configurada</p>
-            </div>
+           
         </div>
 
-        <!-- Gráfico Simulado -->
+        <!-- Gráfico Simulado 
         <div class="sensor-container">
             <h2 style="color:#764ba2;margin-bottom:20px;">📈 Variación de Temperatura - Últimas 24 Horas</h2>
             <div style="background:#f8f9fa;padding:30px;border-radius:10px;">
@@ -93,7 +89,7 @@
                 </div>
             </div>
         </div>
-
+        -->
         <!-- Historial -->
         <div class="sensor-container">
             <h2 style="color:#764ba2;margin-bottom:20px;">📊 Registro de Lecturas</h2>
@@ -101,6 +97,7 @@
                 <table style="width:100%;border-collapse:collapse;">
                     <thead>
                         <tr style="background:#f8f9fa;">
+                            <th style="padding:12px;border-bottom:2px solid #dee2e6;">Fecha</th>
                             <th style="padding:12px;border-bottom:2px solid #dee2e6;">Hora</th>
                             <th style="padding:12px;border-bottom:2px solid #dee2e6;">Ubicación</th>
                             <th style="padding:12px;border-bottom:2px solid #dee2e6;">Temperatura</th>
@@ -115,7 +112,7 @@
 
     </div> <!-- END DASHBOARD -->
 
-    <!-- JS REAL-TIME -->
+    
     <script>
         const locations = ['Invernadero Principal', 'Exterior'];
         let temps=[];
@@ -156,7 +153,7 @@
         function updateTemperatureSensors() {
             const now = new Date();
             const date = now.toISOString().split('T')[0];
-            const timeStr = now.toTimeString().split(' ')[0]; // HH:MM:SS -> compatible con TimeSpan
+            const timeStr = now.toTimeString().split(' ')[0];
             const hour = now.getHours();
             const period = (hour >= 6 && hour < 18) ? 'Día' : 'Noche';
             const optimal = period === 'Día' ? { min: 22, max: 24 } : { min: 18, max: 20 };
@@ -170,7 +167,7 @@
             temps[5]=Math.random() * 15 + 15;
 
             let statusT;
-            let status
+            let status;
             let suma = 0;
             for (let i = 1; i <= 4; i++) {
                 
@@ -272,6 +269,7 @@
 
             container.innerHTML = historialTA.map(h => `
                 <tr>
+                    <td style="padding:12px;">${h.date}</td>
                     <td style="padding:12px;">${h.time}</td>
                     <td style="padding:12px;">${h.sensorId === 5 ? locations[1] : locations[0]}</td>
                     <td style="padding:12px;"><strong>${h.temperatura} ºC</strong></td>
@@ -315,6 +313,10 @@
 
                 let date = item.Fecha ?? item.fecha ?? item.date ?? item.Date ?? null;
                 let time = item.Hora ?? item.hora ?? item.time ?? item.Time ?? null;
+
+                if (date.includes('T')) {
+                    date = date.split('T')[0];
+                }
 
                 if (date && typeof date === 'string' && !time) {
                     const d = new Date(date);
@@ -380,7 +382,7 @@
 
         setInterval(updateTemperatureSensors, 5000);
         updateTemperatureSensors();
-        createTempChart();
+        //createTempChart();
 
         // LOADER
         window.addEventListener("load", () => {

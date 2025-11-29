@@ -13,10 +13,12 @@
 
 <body class="soil-background">
 
+    @Html.AntiForgeryToken()
+
     <!-- LOADER -->
     <div id="loader">
         <div class="loader-icon" style="font-size:70px;">
-            🌱
+            🌸
         </div>
     </div>
     <!-- FIN LOADER -->
@@ -38,94 +40,435 @@
     <div class="container soil-container">
 
         <!-- FILTRO DE BÚSQUEDA -->
+        
         <div class="search-box">
             <div class="calendar-form">
-
                 <div class="form-group">
-                    <label>Zona</label>
-                    <select class="input-orchid">
-                        <option selected>Seleccione zona</option>
-                        <option>Zona A</option>
-                        <option>Zona B</option>
-                        <option>Zona C</option>
-                        <option>Área de Plantines</option>
+                    <label>Sensor</label>
+                    <select id="filtro-idsensor" class="input-orchid" onchange="toggleFilter('sensor')">                        
+                        <option value="" selected>Seleccione Sensor</option>
+                        <option value="6">Sensor 6</option>
+                        <option value="7">Sensor 7</option>
+                        <option value="8">Sensor 8</option>
+                        <option value="9">Sensor 9</option>
+                        <option value="10">Sensor 10</option>
+                        <option value="11">Sensor 11</option>
+                        <option value="12">Sensor 12</option>
+                        <option value="13">Sensor 13</option>
+                        <option value="14">Sensor 14</option>
+                        <option value="15">Sensor 15</option>
+                        <option value="16">Sensor 16</option>
+                        <option value="17">Sensor 17</option>
+                        <option value="18">Sensor 18</option>
+                        <option value="19">Sensor 19</option>
+                        <option value="20">Sensor 20</option>
+                        <option value="21">Sensor 21</option>
+                        <option value="22">Sensor 22</option>
+                        <option value="23">Sensor 23</option>
+                        <option value="24">Sensor 24</option>
+                        <option value="25">Sensor 25</option>
+                        <option value="26">Sensor 26</option>
+                        <option value="27">Sensor 27</option>
+                        <option value="28">Sensor 28</option>
+                        <option value="29">Sensor 29</option>
+                        <option value="30">Sensor 30</option>
+                        <option value="31">Sensor 31</option>
+                        <option value="32">Sensor 32</option>
+                        <option value="33">Sensor 33</option>
+                        <option value="34">Sensor 34</option>
+                        <option value="35">Sensor 35</option>
+                        <option value="36">Sensor 36</option>
+                        <option value="37">Sensor 37</option>
+                        <option value="38">Sensor 38</option>
+                        <option value="39">Sensor 39</option>
+                        <option value="40">Sensor 40</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" class="input-orchid" />
+                    <label>Zona</label>
+                    <select id="filtro-zona" class="input-orchid" onchange="toggleFilter('zona')">
+                        <option value="" selected>Seleccione zona</option>
+                        <option value="Zona A">Zona A</option>
+                        <option value="Zona B">Zona B</option>
+                        <option value="Zona C">Zona C</option>
+                        <option value="Zona Plantines">Zona de Plantines</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Hora</label>
-                    <input type="time" class="input-orchid" />
+                    <label>Fecha Inicial</label>
+                    <input id="filtro-fechainicial" type="date" class="input-orchid" />
+                </div>
+                <div class="form-group">
+                    <label>Fecha Final</label>
+                    <input id="filtro-fechafinal" type="date" class="input-orchid" />
+                </div>
+
+                <div class="form-group">
+                    <label>Hora Inicial</label>
+                    <input id="filtro-horainicial" type="time" class="input-orchid" />
+                </div>
+                <div class="form-group">
+                    <label>Hora Final</label>
+                    <input id="filtro-horafinal" type="time" class="input-orchid" />
                 </div>
             </div>
-            <button class="btn-search">Buscar</button>
+
+            <div id="filtro-error" style="color: #ff3333; font-weight: bold; margin-bottom: 15px;"></div>
+
+            <button class="btn-search" onclick="filtroUpdate()">Buscar</button>
+
         </div>
 
         <!-- TABLA DE LECTURAS -->
         <div class="table-section">
             <h2 class="section-title">
-                📊 Últimas Lecturas (Simulado)
+                📊 Últimas Lecturas
+                <button onclick="location.reload()" class="btn-primary">🔄 Actualizar</button>
             </h2>
-
-            <table class="orchid-table">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Zona</th>
-                        <th>Sensor</th>
-                        <th>Humedad</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>22/11/2025</td>
-                        <td>11:20</td>
-                        <td>Zona A</td>
-                        <td>Sensor 1</td>
-                        <td>49.6%</td>
-                        <td><span class="estado-optimo">Óptimo</span></td>
-                    </tr>
-                    <tr>
-                        <td>22/11/2025</td>
-                        <td>11:22</td>
-                        <td>Zona B</td>
-                        <td>Sensor 2</td>
-                        <td>44.6%</td>
-                        <td><span class="estado-seco">Seco</span></td>
-                    </tr>
-                    <tr>
-                        <td>22/11/2025</td>
-                        <td>11:24</td>
-                        <td>Zona C</td>
-                        <td>Sensor 3</td>
-                        <td>53.4%</td>
-                        <td><span class="estado-optimo">Óptimo</span></td>
-                    </tr>
-                    <tr>
-                        <td>22/11/2025</td>
-                        <td>11:27</td>
-                        <td>Área de Plantines</td>
-                        <td>Sensor 4</td>
-                        <td>73.5%</td>
-                        <td><span class="estado-muyhumedo">Muy Húmedo</span></td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="scroll-limited">
+                <table class="orchid-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Zona</th>
+                            <th>Sensor</th>
+                            <th>Humedad</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="humHistoryTable">
+                        <tr>
+                            <td>22/11/2025</td>
+                            <td>11:20</td>
+                            <td>Zona A</td>
+                            <td>Sensor 1</td>
+                            <td>49.6%</td>
+                            <td><span class="estado-optimo">Óptimo</span></td>
+                        </tr>
+                        <tr>
+                            <td>22/11/2025</td>
+                            <td>11:22</td>
+                            <td>Zona B</td>
+                            <td>Sensor 2</td>
+                            <td>44.6%</td>
+                            <td><span class="estado-seco">Seco</span></td>
+                        </tr>
+                        <tr>
+                            <td>22/11/2025</td>
+                            <td>11:24</td>
+                            <td>Zona C</td>
+                            <td>Sensor 3</td>
+                            <td>53.4%</td>
+                            <td><span class="estado-optimo">Óptimo</span></td>
+                        </tr>
+                        <tr>
+                            <td>22/11/2025</td>
+                            <td>11:27</td>
+                            <td>Área de Plantines</td>
+                            <td>Sensor 4</td>
+                            <td>73.5%</td>
+                            <td><span class="estado-muyhumedo">Muy Húmedo</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
     </div>
 
     <script>
-        // Ocultar loader
-        window.onload = function () {
-            document.getElementById("loader").style.display = "none";
-        };
+        let historialHS=[];
+        let hums=[];
+
+        function toggleFilter(changedElement) {
+            const sensorSelect = document.getElementById('filtro-idsensor');
+            const zonaSelect = document.getElementById('filtro-zona');
+
+            if (changedElement === 'sensor') {                
+                if (sensorSelect.value) {
+                    zonaSelect.disabled = true;
+                    zonaSelect.value = ""; 
+                } else {
+                    zonaSelect.disabled = false;
+                }
+            } else if (changedElement === 'zona') {                
+                if (zonaSelect.value) {
+                    sensorSelect.disabled = true;
+                    sensorSelect.value = ""; 
+                } else {
+                    sensorSelect.disabled = false;
+                }
+            }
+        }
+
+        function filtroUpdate(){
+            // Obtencion de variables usando sus Ids
+            const sensor = document.getElementById('filtro-idsensor');
+            const zona = document.getElementById('filtro-zona');
+            const fechaInicial= document.getElementById('filtro-fechainicial');
+            const fechaFinal = document.getElementById('filtro-fechafinal');
+            const horaInicial = document.getElementById('filtro-horainicial');
+            const horaFinal = document.getElementById('filtro-horafinal');
+
+            const errorDisplay = document.getElementById('filtro-error');
+
+            // Transformacion a valores usables
+            const sensorId = sensor.value;
+            const zonaNombre = zona.value;
+            const fechaInicioFiltro = fechaInicial.value;
+            const fechaFinalFiltro = fechaFinal.value;
+            const horaInicioFiltro = horaInicial.value;
+            const horaFinFiltro = horaFinal.value;
+
+                
+            if (!fechaInicioFiltro || !fechaFinalFiltro || !horaInicioFiltro || !horaFinFiltro) {
+                errorDisplay.textContent = '⛔ Error: Fecha y Horas (Inicial y Final) son requeridas.';
+            
+                if (!fechaInicioFiltro) fechaInicial.focus();
+                else if (!fechaFinalFiltro) fechaFinal.focus();
+                else if (!horaInicioFiltro) horaInicial.focus();
+                else if (!horaFinFiltro) horaFinal.focus();              
+            
+            }else{
+                errorDisplay.textContent = '';                
+            }
+
+            getFiltro(sensorId,zonaNombre,fechaInicioFiltro,fechaFinalFiltro,horaInicioFiltro,horaFinFiltro);
+        }
+
+
+        async function getFiltro(sensorId, zonaNombre, fechaInicioFiltro, fechaFinalFiltro, horaInicioFiltro, horaFinFiltro) {
+            try {
+
+                const params = new URLSearchParams({
+                    idSensor: sensorId || null,
+                    zona: zonaNombre,
+                    fechaInicial: fechaInicioFiltro,
+                    fechaFinal: fechaFinalFiltro,
+                    horaInicial: horaInicioFiltro,
+                    horaFinal: horaFinFiltro
+                }).toString();
+
+                const url = '@Url.Action("Filtro", "HumedadSuelo")?' + params;
+
+                const res = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!res.ok) throw new Error('Respuesta no OK: ' + res.status);
+                const data = await res.json();
+
+                console.debug('[getFiltro] respuesta cruda:', data);
+
+                let raw = [];
+                if (Array.isArray(data)) raw = data;
+                else if (data && Array.isArray(data.data)) raw = data.data;
+                else if (data && Array.isArray(data.list)) raw = data.list;
+                else raw = [];
+
+
+                if (raw.length > 0) console.debug('[getFiltro] primer item raw:', raw[0]);
+
+                historialHS = raw.map(mapServerToClient).reverse().slice(0, 50);
+                console.log(raw);
+
+            } catch (err) {
+                console.error('Error cargando historial filtrado:', err);
+                historialHS = [];
+            }
+
+            renderHistoryList();
+        }
+
+
+        // Envia un POST por sensor al controlador con antiforgery token
+        async function postAgregarDatosSensorEHistorial(idSensor, humedad, date, time, estado) {
+            try {
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : '';
+
+                const res = await fetch('@Url.Action("AgregarDatosSensorEHistorialHS", "HumedadSuelo")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
+                    },
+                    body: new URLSearchParams({
+                        '__RequestVerificationToken': token,
+                        'idSensor': idSensor,
+                        'humedad': humedad,
+                        'date' : date,
+                        'time' : time,
+                        'estado' : estado
+                    })
+                });
+
+                if (!res.ok) throw new Error('Respuesta no OK: ' + res.status);
+                const json = await res.json();
+                return json;
+            } catch (err) {
+                console.error('Error en postAgregarDatosSensor:', err);
+                return { success: false, message: err.message };
+            }
+        }
+
+        function updateHumiditySoilSensors() {
+            const now = new Date();
+            const date = now.toISOString().split('T')[0];
+            const time = now.toTimeString().split(' ')[0];
+            const OPTIMAL_MIN = 40;
+            const OPTIMAL_MAX = 70;                       
+            const promises = [];
+
+            for (let i = 6; i <= 40; i++){
+                let status;
+                hums[i]=Math.random() * 40 + 40;
+
+                if (hums[i] >= OPTIMAL_MIN && hums[i] <= OPTIMAL_MAX) status = 'Optimo';
+                else if (hums[i] < OPTIMAL_MIN) status = 'Seco';
+                else status = 'Muy Humedo';
+
+                promises.push(postAgregarDatosSensorEHistorial(i, hums[i].toFixed(1), date, time, status));
+            }            
+
+            Promise.all(promises)
+                .then(() => getHistorialHS())
+                .catch(err => {
+                    console.error('Error en envíos de sensores:', err);                   
+                    getHistorialHS();
+                });            
+        }
+
+        // Recupera historial desde MostrarHistorial y lo mapea
+        async function getHistorialHS() {
+            try {
+                const res = await fetch('@Url.Action("MostrarHistorial", "HumedadSuelo")', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!res.ok) throw new Error('Respuesta no OK: ' + res.status);
+                const data = await res.json();
+
+                console.debug('[addHistory] respuesta cruda:', data);
+
+                let raw = [];
+                if (Array.isArray(data)) raw = data;
+                else if (data && Array.isArray(data.data)) raw = data.data;
+                else if (data && Array.isArray(data.list)) raw = data.list;
+                else raw = [];
+
+
+                if (raw.length > 0) console.debug('[addHistory] primer item raw:', raw[0]);
+
+                historialHS = raw.map(mapServerToClient).reverse().slice(0, 50);
+                //console.log(raw);
+
+            } catch (err) {
+                console.error('Error cargando historialHS:', err);
+                historialHS = [];
+            }
+
+            renderHistoryList();
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('humHistoryTable');
+            if (!Array.isArray(historialHS) || historialHS.length === 0) {
+                container.innerHTML = '<tr><td colspan="6" class="history-empty">No hay Historial disponible</td></tr>';
+                return;
+            }
+
+            container.innerHTML = historialHS.map(h => `
+                <tr>
+                    <td style="padding:12px;">${h.date}</td>
+                    <td style="padding:12px;">${h.time}</td>
+                    <td style="padding:12px;">${h.zona}</td>
+                    <td style="padding:12px;">Sensor ${h.sensorId}</td>
+                    <td style="padding:12px;"><strong>${h.humedad}%</strong></td>
+                    <td style="padding:12px;">${h.status}</td>
+                </tr>
+            `).join('');
+            console.debug(`renderHistoryList: renderizados ${historialHS.length} registros`);
+        }
+
+        function mapServerToClient(item) {
+            try {
+                const idRegistro = item.IdRegistroHistoricoTA ?? item.idRegistroHistoricoTA ?? item.IdRegistro ?? item.id ?? null;
+                const idValores = item.IdValoresSensor ?? item.idValoresSensor ?? null;
+
+                const vs = item.valoresSensor ?? item.ValoresSensor ?? item.Valores ?? null;
+                const s = vs.sensor ?? vs.Sensor ?? null;
+
+                const humRaw = item.humedad ?? item.humidity ?? (vs ? (vs.humedad ?? vs.humedad ?? vs.humidity ?? vs.Humidity) : null);
+                const humidity = (humRaw === null || humRaw === undefined) ? null : parseFloat(humRaw);
+
+
+                const sensorId = item.sensorId ?? item.SensorId ?? item.idSensor ?? item.IdSensor ?? (vs?.idSensor ?? vs?.IdSensor) ?? null;
+
+                let date = item.Fecha ?? item.fecha ?? item.date ?? item.Date ?? null;
+                let time = item.Hora ?? item.hora ?? item.time ?? item.Time ?? null;
+                
+                if (date.includes('T')) {
+                    date = date.split('T')[0];
+                }
+
+                if (date && typeof date === 'string' && !time) {
+                    const d = new Date(date);
+                    if (!isNaN(d)) {
+                        date = d.toLocaleDateString();
+                        time = d.toLocaleTimeString();
+                    }
+                }
+
+                const now = new Date();
+                date = date ?? now.toLocaleDateString();
+                time = time ?? now.toLocaleTimeString();                
+
+                let zona = s.ubicacion ?? s.Ubicacion ?? s.zona ?? s.Zona ?? null;
+
+                let status = item.status ?? item.estado ?? item.Estado ?? null;
+                    
+
+                return {
+                    idRegistro,
+                    idValores,
+                    sensorId: sensorId ?? '--',
+                    humedad: (humidity !== null && !isNaN(humidity)) ? humidity.toFixed(1) : '--',
+                    date,
+                    time,
+                    zona: zona ?? 'N/D',
+                    status: status ?? '⏳ Sin datos'
+                };
+            } catch (err) {
+                console.error('mapServerToClient error:', err, item);
+                return {
+                    idRegistro: null,
+                    idValores: null,
+                    sensorId: '--',
+                    humedad: '--',
+                    date: new Date().toLocaleDateString(),
+                    time: new Date().toLocaleTimeString(),
+                    zona: 'N/D',
+                    status: '⏳ Sin datos'
+                };
+            }
+        }
+
+        
+        updateHumiditySoilSensors();
+
+        // LOADER
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("loader");
+            loader.classList.add("fade-out");
+
+            setTimeout(() => {
+                loader.style.display = "none";
+            }, 500);
+        });
     </script>
 
 </body>

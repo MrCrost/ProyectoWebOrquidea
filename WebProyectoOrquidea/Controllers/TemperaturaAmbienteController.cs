@@ -81,21 +81,6 @@ namespace WebProyectoOrquidea.Controllers
             }
         }
 
-        // GET: Obtener historial de datos
-        [HttpGet]
-        public IActionResult GetHistoricalData(DateTime startDate, DateTime endDate, string sensorType)
-        {
-            // AQUÍ SE CONECTARÍA CON LA BASE DE DATOS
-            // Consulta de ejemplo:
-            /*
-            var query = @"SELECT * FROM HistorialSensores 
-                         WHERE FechaRegistro BETWEEN @StartDate AND @EndDate 
-                         AND TipoSensor = @SensorType
-                         ORDER BY FechaRegistro DESC";
-            */
-
-            return Json(new { success = true, data = new List<object>() });
-        }
 
         // POST: Agregar datos Sensor
         [HttpPost]
@@ -136,5 +121,7 @@ namespace WebProyectoOrquidea.Controllers
                 return Json(new { success = false, message = ex.Message, data = new List<RegistroHistoricoTA>() });
             }
         }
+
+
     }
 }

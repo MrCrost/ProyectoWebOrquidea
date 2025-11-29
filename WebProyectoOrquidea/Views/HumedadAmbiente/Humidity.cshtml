@@ -76,9 +76,9 @@
 
             <!-- HISTORIAL -->
             <div class="sensor-container">
-                <h2 style="color: #764ba2;">📊 Últimas Lecturas (Simulado)</h2>
+                <h2 style="color: #764ba2;">📊 Últimas Lecturas</h2>
 
-                <div style="overflow-x: auto;">
+                <div class="scroll-limited">
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="background: #f8f9fa;">
@@ -228,6 +228,10 @@
                     // Fecha / Hora: puede venir en propiedades Fecha / Hora o en un timestamp
                     let date = item.date ?? item.Date ?? item.Fecha ?? item.fecha ?? null;
                     let time = item.time ?? item.Time ?? item.Hora ?? item.hora ?? null;
+
+                    if (date.includes('T')) {
+                        date = date.split('T')[0];
+                    }
 
                     if (date && typeof date === 'string' && !time) {
                         // si Fecha viene en ISO, separa fecha/hora
